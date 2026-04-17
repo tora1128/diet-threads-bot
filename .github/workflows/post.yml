@@ -2,7 +2,7 @@ name: Diet Threads Auto Post
 
 on:
   schedule:
-    # JST = UTC+9　各スロットでランダム遅延（sleep）を加えて時刻をぼかす
+    # JST = UTC+9　4つの時間帯でそれぞれ起動
     - cron: '0 22 * * *'   # 07:00 JST
     - cron: '0 2 * * *'    # 11:00 JST
     - cron: '0 6 * * *'    # 15:00 JST
@@ -12,7 +12,7 @@ on:
 jobs:
   post:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
 
     steps:
       - name: コードを取得
@@ -25,12 +25,6 @@ jobs:
 
       - name: 依存ライブラリをインストール
         run: pip install -r requirements.txt
-
-      - name: ランダム遅延（0〜59分）
-        run: |
-          DELAY=$((RANDOM % 3540))
-          echo "待機: ${DELAY}秒"
-          sleep $DELAY
 
       - name: Threads に投稿
         env:
