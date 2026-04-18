@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""収集したダイエット記事から 50〜100 文字の文章を生成し、Threads に投稿するツール"""
+"""収集したダイエット記事から 100〜500 文字の文章を生成し、Threads に投稿するツール"""
 
 import argparse
 import re
@@ -58,7 +58,7 @@ def split_sentences(text: str) -> list[str]:
     return [p.strip() for p in parts if p.strip()]
 
 
-def trim_to_range(text: str, lo: int = 50, hi: int = 100) -> Optional[str]:
+def trim_to_range(text: str, lo: int = 100, hi: int = 500) -> Optional[str]:
     """テキストをlo〜hi文字に収める。無理なら None"""
     text = text.strip()
     if len(text) < lo:
@@ -67,7 +67,7 @@ def trim_to_range(text: str, lo: int = 50, hi: int = 100) -> Optional[str]:
         return text
     # 句読点で自然に切る
     for i in range(hi, lo - 1, -1):
-        if text[i] in "。、！？,.":
+        if text[i] in "。！？":
             return text[: i + 1]
     # 句読点がなければ強制カット
     return text[:hi]
@@ -77,52 +77,59 @@ def trim_to_range(text: str, lo: int = 50, hi: int = 100) -> Optional[str]:
 # 文章候補の抽出
 # ─────────────────────────────────────────────
 
-# タイトルを文体に変換するテンプレート
+# タイトルを文体に変換するテンプレート（100〜500文字対応）
 _TITLE_TEMPLATES = [
-    "{title}を実践することで、効果的なダイエットに近づくことができます。",
-    "{title}は多くの人が注目するダイエット法で、継続することが大切です。",
-    "{title}を意識した食事管理が、健康的な体づくりの第一歩になります。",
-    "{title}の方法を学び、無理なく体重管理を続けることが成功への鍵です。",
-    "{title}について知ることで、自分に合ったダイエット計画が立てやすくなります。",
+    "{title}を実践することで、効果的なダイエットに近づくことができます。食事の内容を見直し、適度な運動を組み合わせることが健康的な体重管理の基本です。無理なく継続できる方法を選び、毎日少しずつ積み重ねていくことが長期的な成功につながります。",
+    "{title}は多くの人が注目するダイエット法で、継続することが大切です。正しい知識を持って取り組むことで、リバウンドしにくい体づくりができます。自分のライフスタイルに合わせたアプローチを見つけることが、成功への第一歩となります。",
+    "{title}を意識した食事管理が、健康的な体づくりの第一歩になります。カロリーだけでなく、栄養バランスを考えた食生活を送ることが大切です。無理な制限はストレスになるため、楽しみながら続けられる方法を探してみましょう。",
+    "{title}の方法を学ぶことで、無理なく体重管理を続けることができます。ダイエットは短期間で結果を求めるのではなく、生活習慣の改善として長期的に取り組むことが重要です。焦らず自分のペースで進めていきましょう。",
+    "{title}について理解を深めることで、自分に合ったダイエット計画が立てやすくなります。食事・運動・睡眠のバランスを整え、心身ともに健康な状態を目指すことが理想的なダイエットの姿です。",
 ]
 
 _KEYWORD_TEMPLATES = [
-    "{kw}を取り入れた食生活は、体重管理に効果的とされており実践者が増えています。",
-    "{kw}を意識することで、日々の食事をより健康的に改善することができます。",
-    "{kw}の基本を押さえ、継続的に取り組むことがダイエット成功の鍵です。",
-    "{kw}は正しく行えば健康的に痩せる手助けになりますが、無理は禁物です。",
-    "{kw}に関する正確な知識を持ち、自分の体質に合った方法を選びましょう。",
+    "{kw}を取り入れた食生活は、体重管理に効果的とされており実践者が増えています。毎日の食事を少し見直すだけで、カロリー摂取を自然に抑えることができます。継続することが何より大切なので、無理のない範囲で少しずつ変えていきましょう。",
+    "{kw}を意識することで、日々の食事をより健康的に改善することができます。栄養バランスの取れた食事を心がけ、適度な運動と組み合わせることで、健康的に体重を管理できます。焦らず毎日コツコツと続けることが成功の秘訣です。",
+    "{kw}の基本を押さえ、継続的に取り組むことがダイエット成功の鍵です。食事制限だけに頼らず、日常生活の中で体を動かす習慣をつけることも大切です。小さな変化の積み重ねが、大きな結果につながります。",
+    "{kw}は正しく行えば健康的に痩せる手助けになりますが、無理は禁物です。自分の体質や生活スタイルに合った方法を選び、長く続けられるダイエットを目指しましょう。専門家のアドバイスを参考にするのも良い選択です。",
+    "{kw}に関する正確な知識を持ち、自分の体質に合った方法を選ぶことが重要です。流行のダイエット法に飛びつくのではなく、科学的な根拠のある方法を実践することで、安全で効果的なダイエットが実現できます。",
 ]
 
 
 def candidates_from_results(results: list[dict], query: str) -> list[str]:
-    """記事リストから 50〜100 文字の候補文を抽出・生成"""
+    """記事リストから 100〜500 文字の候補文を抽出・生成"""
     seen: set[str] = set()
     candidates: list[str] = []
 
     def add(text: str) -> None:
         s = trim_to_range(clean(text))
-        if s and s not in seen and len(s) >= 50 and is_relevant(s):
+        if s and s not in seen and len(s) >= 100 and is_relevant(s):
             seen.add(s)
             candidates.append(s)
 
-    # ① サマリー文から直接抽出
+    # ① サマリー全体を優先的に使う（長文向け）
     for r in results:
         summary = r.get("summary", "")
-        for sent in split_sentences(summary):
-            add(sent)
-        # サマリー全体も試す
         add(summary)
 
-    # ② タイトルをテンプレートで文に変換（短いタイトルのみ）
+    # ② 複数文を結合して100文字以上にする
+    for r in results:
+        summary = r.get("summary", "")
+        sents = split_sentences(summary)
+        combined = ""
+        for sent in sents:
+            combined += sent + "。"
+            if len(clean(combined)) >= 100:
+                add(combined)
+                break
+
+    # ③ タイトルをテンプレートで長文に変換
     import itertools
     for r, tmpl in zip(results, itertools.cycle(_TITLE_TEMPLATES)):
         title = clean(r.get("title", ""))
-        # タイトルが短め（30文字以内）のときだけテンプレートに当てはめる
-        if title and len(title) <= 30:
+        if title and len(title) <= 40:
             add(tmpl.format(title=title))
 
-    # ③ キーワードテンプレート（候補が少ない場合の補充）
+    # ④ キーワードテンプレート（補充）
     kw = query.split()[0] if query else "ダイエット"
     for tmpl in _KEYWORD_TEMPLATES:
         add(tmpl.format(kw=kw))
@@ -138,11 +145,13 @@ def score(sentence: str) -> float:
     """文章の品質スコア（高いほど良い）"""
     s = 0.0
     ln = len(sentence)
-    # 文字数が 60〜90 に近いほど高得点
-    s += 2.0 - abs(ln - 75) / 25
+    # 文字数が 150〜400 に近いほど高得点
+    s += 2.0 - abs(ln - 275) / 225
     # 。で終わる文は自然
     if sentence.endswith("。"):
         s += 1.0
+    # 複数の文が含まれる（内容が充実）
+    s += min(sentence.count("。"), 4) * 0.3
     # 動詞・助詞が含まれる（日本語らしさ）
     if re.search(r"[はがをにでもの]", sentence):
         s += 0.5
@@ -236,7 +245,7 @@ def render_sentences(sentences: list[str], query: str) -> None:
     console.print()
     for i, s in enumerate(sentences, 1):
         length = len(s)
-        color = "green" if 50 <= length <= 100 else "yellow"
+        color = "green" if 100 <= length <= 500 else "yellow"
         console.print(
             f"[dim]{i:2}.[/dim] {s}  [{color}]({length}文字)[/{color}]"
         )
@@ -249,7 +258,7 @@ def render_sentences(sentences: list[str], query: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="ダイエット情報収集 → 50〜100 文字の文章を生成し Threads に投稿",
+        description="ダイエット情報収集 → 100〜500 文字の文章を生成し Threads に投稿",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 例:
