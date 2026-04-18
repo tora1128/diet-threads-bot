@@ -2,8 +2,8 @@ name: Diet Threads Auto Post
 
 on:
   schedule:
-    # JST = UTC+9　4つの時間帯でそれぞれ起動
-    - cron: '0 22 * * *'   # 07:00 JST
+    # 日本時間（JST = UTC+9）で1日4回投稿
+    - cron: '0 22 * * *'   # 翌 07:00 JST
     - cron: '0 2 * * *'    # 11:00 JST
     - cron: '0 6 * * *'    # 15:00 JST
     - cron: '0 10 * * *'   # 19:00 JST
@@ -13,6 +13,8 @@ jobs:
   post:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      TZ: Asia/Tokyo        # ログ表示を日本時間に統一
 
     steps:
       - name: コードを取得
@@ -25,6 +27,9 @@ jobs:
 
       - name: 依存ライブラリをインストール
         run: pip install -r requirements.txt
+
+      - name: 現在の日本時間を表示
+        run: echo "実行時刻（JST）: $(date '+%Y-%m-%d %H:%M:%S %Z')"
 
       - name: Threads に投稿
         env:

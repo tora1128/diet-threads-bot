@@ -1,5 +1,7 @@
 .env
+.note_session.json
 scheduler.log
 __pycache__/
 *.pyc
 nohup.out
+debug*.png
