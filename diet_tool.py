@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""ダイエット情報収集ツール — Web & note.com から情報を集めて表示する"""
+"""ダイエット情報収集ツール — Web & note.com & X.com から情報を集めて表示する"""
 
 import argparse
 import sys
@@ -96,6 +96,53 @@ def search_web(query: str, limit: int = 10) -> list[dict]:
 
 
 # ─────────────────────────────────────────────
+# X.com 検索（DuckDuckGo 経由、APIキー不要）
+# ─────────────────────────────────────────────
+
+def search_x(query: str, limit: int = 10) -> list[dict]:
+    """X.com の投稿を DuckDuckGo で検索する（APIキー不要）"""
+    url = "https://html.duckduckgo.com/html/"
+    x_query = f"site:x.com {query}"
+    try:
+        resp = requests.post(
+            url,
+            data={"q": x_query},
+            headers=HEADERS,
+            timeout=10,
+        )
+        resp.raise_for_status()
+        soup = BeautifulSoup(resp.text, "html.parser")
+        results = []
+        for div in soup.select(".result__body")[:limit * 2]:
+            a = div.find("a", class_="result__a")
+            snippet = div.find("a", class_="result__snippet")
+            if not a:
+                continue
+            raw_url = a.get("href", "")
+            if "uddg=" in raw_url:
+                from urllib.parse import urlparse, parse_qs, unquote
+                parsed = urlparse(raw_url)
+                uddg = parse_qs(parsed.query).get("uddg", [""])
+                raw_url = unquote(uddg[0]) if uddg[0] else raw_url
+            # x.com / twitter.com のURLのみ残す
+            if "x.com" not in raw_url and "twitter.com" not in raw_url:
+                continue
+            results.append({
+                "source": "X.com",
+                "title": a.get_text(strip=True),
+                "url": raw_url,
+                "summary": snippet.get_text(strip=True) if snippet else "",
+                "likes": None,
+            })
+            if len(results) >= limit:
+                break
+        return results
+    except Exception as e:
+        console.print(f"[yellow]X.com 検索エラー: {e}[/yellow]")
+        return []
+
+
+# ─────────────────────────────────────────────
 # 表示
 # ─────────────────────────────────────────────
 
@@ -147,6 +194,7 @@ def main() -> None:
   python diet_tool.py -q "intermittent fasting" -n 5
   python diet_tool.py --source web
   python diet_tool.py --source note
+  python diet_tool.py --source x
         """,
     )
     parser.add_argument(
@@ -162,7 +210,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--source",
-        choices=["all", "web", "note"],
+        choices=["all", "web", "note", "x"],
         default="all",
         help="情報源の選択 (デフォルト: all)",
     )
@@ -186,6 +234,11 @@ def main() -> None:
         console.print("\n[bold]note.com を検索中...[/bold]")
         note_results = search_note(args.query, args.num)
         render_results(note_results, "note.com 記事")
+
+    if args.source in ("all", "x"):
+        console.print("\n[bold]X.com を検索中...[/bold]")
+        x_results = search_x(args.query, args.num)
+        render_results(x_results, "X.com 投稿")
 
     console.print("\n[dim]検索完了[/dim]")
 

@@ -11,7 +11,7 @@ import time
 
 # diet-tool の関数を再利用
 sys.path.insert(0, os.path.dirname(__file__))
-from diet_tool import search_note, search_web
+from diet_tool import search_note, search_web, search_x
 from generate_sentences import candidates_from_results, select_sentences
 from generate_sentences import threads_post
 
@@ -79,6 +79,7 @@ def run_once(user_id: str, token: str, dry_run: bool = False) -> None:
     try:
         results += search_web(query, limit=10)
         results += search_note(query, limit=10)
+        results += search_x(query, limit=10)
     except Exception as e:
         log.warning(f"検索エラー: {e}")
 
