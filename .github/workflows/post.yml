@@ -31,6 +31,15 @@ jobs:
       - name: 現在の日本時間を表示
         run: echo "実行時刻（JST）: $(date '+%Y-%m-%d %H:%M:%S %Z')"
 
+      - name: シークレット確認
+        env:
+          THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+        run: |
+          if [ -z "$THREADS_USER_ID" ]; then echo "ERROR: THREADS_USER_ID が未設定"; exit 1; fi
+          if [ -z "$THREADS_ACCESS_TOKEN" ]; then echo "ERROR: THREADS_ACCESS_TOKEN が未設定"; exit 1; fi
+          echo "シークレット設定OK（USER_ID: ${THREADS_USER_ID:0:4}...）"
+
       - name: Threads に投稿
         env:
           THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
