@@ -29,7 +29,8 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: 現在の日本時間を表示
-        run: echo "実行時刻（JST）: $(date '+%Y-%m-%d %H:%M:%S %Z')"
+        run: |
+          echo "実行時刻（JST）: $(date '+%Y-%m-%d %H:%M:%S %Z')"
 
       - name: シークレット確認
         env:
