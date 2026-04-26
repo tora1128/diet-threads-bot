@@ -184,16 +184,19 @@ def select_sentences(candidates: list[str], num: int) -> list[str]:
 THREADS_API = "https://graph.threads.net/v1.0"
 
 
-def threads_post(text: str, user_id: str, token: str) -> Optional[str]:
-    """1件の文章を Threads に投稿し、スレッド ID を返す"""
+def threads_post(text: str, user_id: str, token: str, reply_to_id: Optional[str] = None) -> Optional[str]:
+    """1件の文章を Threads に投稿し、スレッド ID を返す。reply_to_id を指定するとリプライになる"""
     # Step 1: メディアコンテナ作成
+    params = {
+        "media_type": "TEXT",
+        "text": text,
+        "access_token": token,
+    }
+    if reply_to_id:
+        params["reply_to_id"] = reply_to_id
     resp = _requests.post(
         f"{THREADS_API}/{user_id}/threads",
-        params={
-            "media_type": "TEXT",
-            "text": text,
-            "access_token": token,
-        },
+        params=params,
         timeout=15,
     )
     if not resp.ok:
