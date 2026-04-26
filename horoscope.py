@@ -82,6 +82,7 @@ def generate_horoscope_posts(date: datetime.date) -> list[str]:
     for i, medal in enumerate(medals):
         headline, body = _pick(_HIGH, base + i)
         lines += ["", f"{medal}：{ranking[i]}", headline, body]
+    lines += ["", "4位以降はコメ欄へ👇 本日ラッキーな方はコメ欄で教えて！"]
     post1 = "\n".join(lines)
 
     # ── 投稿2: 4〜6位 ──
