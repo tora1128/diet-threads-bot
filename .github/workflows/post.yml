@@ -1,12 +1,8 @@
-name: Diet Threads Auto Post
+name: 星座ランキング Auto Post
 
 on:
   schedule:
-    # 日本時間（JST = UTC+9）で1日4回投稿
-    - cron: '0 22 * * *'   # 翌 07:00 JST
-    - cron: '0 2 * * *'    # 11:00 JST
-    - cron: '0 6 * * *'    # 15:00 JST
-    - cron: '0 10 * * *'   # 19:00 JST
+    - cron: '0 22 * * *'   # 毎朝 07:00 JST（UTC+9）
   workflow_dispatch:        # 手動実行ボタン（テスト用）
 
 jobs:
@@ -14,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      TZ: Asia/Tokyo        # ログ表示を日本時間に統一
+      TZ: Asia/Tokyo
 
     steps:
       - name: コードを取得

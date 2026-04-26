@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""ダイエット情報を1日4回ランダムな時間に Threads へ自動投稿するスケジューラー"""
+"""毎日の星座ランキングを Threads へ自動投稿するスケジューラー"""
 
 import argparse
 import datetime
@@ -9,13 +9,9 @@ import random
 import sys
 import time
 
-import re
-
-# diet-tool の関数を再利用
 sys.path.insert(0, os.path.dirname(__file__))
-from diet_tool import search_note, search_web, search_x
-from generate_sentences import candidates_from_results, select_sentences
 from generate_sentences import threads_post
+from horoscope import generate_horoscope_posts
 
 # ─────────────────────────────────────────────
 # ログ設定
@@ -56,136 +52,46 @@ def daily_schedule(n: int = 4, start_h: int = 7, end_h: int = 22) -> list[dateti
 
 
 # ─────────────────────────────────────────────
+# 星座ランキング生成
+# ─────────────────────────────────────────────
+
+# ─────────────────────────────────────────────
 # 1回分の投稿処理
 # ─────────────────────────────────────────────
 
-QUERIES = [
-    "ダイエット 食事",
-    "糖質制限",
-    "食生活 改善",
-    "有酸素運動 ダイエット",
-    "ダイエット 継続",
-    "カロリー 管理",
-    "筋トレ ダイエット",
-    "ダイエット レシピ",
-]
-
-
-_STYLE_RULES = [
-    # ですます → 語り口調
-    (r'できます。',     'できた。'),
-    (r'します。',       'した。'),
-    (r'なります。',     'なった。'),
-    (r'思います。',     'と思う。'),
-    (r'大切です。',     '大切だと感じた。'),
-    (r'重要です。',     '重要だと気づいた。'),
-    (r'ましょう。',     'といいと思う。'),
-    (r'でしょう。',     'だと思う。'),
-    (r'ください。',     'といいよ。'),
-    (r'あります。',     'あった。'),
-    (r'います。',       'いた。'),
-    (r'わかります。',   'わかった。'),
-    (r'つながります。', 'つながっていった。'),
-    (r'変わります。',   '変わっていった。'),
-    (r'続けます。',     '続けた。'),
-    (r'できません。',   'できなかった。'),
-    (r'しません。',     'しなかった。'),
-    (r'ありません。',   'なかった。'),
-]
-
-
-def polish_text(text: str) -> str:
-    """ルールベースで文章を整える（APIなし）"""
-
-    # 1. 外部サイト名・URL・出典を除去
-    text = re.sub(r'https?://\S+', '', text)                        # URL
-    text = re.sub(r'(出典|参考|引用|via|by|from)[：:]\s*\S+', '', text)  # 出典表記
-    text = re.sub(r'【[^】]*】', '', text)                            # 【サイト名】
-    text = re.sub(r'「[^」]{1,30}(サイト|メディア|ブログ|note|web|Web)[^」]*」', '', text)
-
-    # 2. ですます調 → 語り口調に変換
-    for pattern, replacement in _STYLE_RULES:
-        text = re.sub(pattern, replacement, text)
-
-    # 3. 連続する句読点・スペースを整理
-    text = re.sub(r'。{2,}', '。', text)
-    text = re.sub(r'、{2,}', '、', text)
-    text = re.sub(r'[\u3000]+', '', text)
-    text = re.sub(r' +', '', text)
-
-    # 4. 文末が句読点で終わっていない場合は「。」を追加
-    if text and text[-1] not in '。！？':
-        text += '。'
-
-    # 5. 文を分割（1文ずつ改行するため）
-    sentences = re.split(r'(?<=[。！？])', text)
-    sentences = [s.strip() for s in sentences if s.strip()]
-
-    # 6. 短すぎる文（5文字未満）は除去
-    sentences = [s for s in sentences if len(s) >= 5]
-
-    # 7. 1文ずつ改行で結合・500文字以内に収める
-    result_lines = []
-    total = 0
-    for s in sentences:
-        if total + len(s) + 1 <= 500:   # +1 は改行文字分
-            result_lines.append(s)
-            total += len(s) + 1
-        else:
-            break
-    result = '\n'.join(result_lines)
-
-    # 8. 100文字未満なら元のテキストを返す
-    if len(result.replace('\n', '')) < 100:
-        return text[:500]
-
-    log.info(f"文章整形完了 ({len(text)}→{len(result)}文字)")
-    return result
-
-
 def run_once(user_id: str, token: str, dry_run: bool = False) -> None:
-    """記事収集 → 文章生成 → Threads 投稿を1回実行"""
-    query = random.choice(QUERIES)
-    log.info(f"検索キーワード: {query}")
+    """星座ランキング生成（3投稿）→ Threads に順次投稿"""
+    today = datetime.date.today()
+    log.info(f"星座ランキング生成中 ({today})")
 
-    # 情報収集
-    results = []
     try:
-        results += search_web(query, limit=10)
-        results += search_note(query, limit=10)
-        results += search_x(query, limit=10)
+        posts = generate_horoscope_posts(today)
     except Exception as e:
-        log.warning(f"検索エラー: {e}")
-
-    if not results:
-        log.warning("記事が取得できませんでした。スキップします。")
+        log.error(f"Claude API エラー: {e}")
         return
 
-    # 文章生成
-    candidates = candidates_from_results(results, query)
-    sentences = select_sentences(candidates, num=1)
-
-    if not sentences:
-        log.warning("文章を生成できませんでした。スキップします。")
+    if not posts:
+        log.warning("投稿文章を生成できませんでした。スキップします。")
         return
 
-    text = sentences[0]
-    log.info(f"生成文章 ({len(text)}文字): {text}")
+    for i, text in enumerate(posts, 1):
+        log.info(f"投稿 {i}/{len(posts)} ({len(text)}文字):\n{text}")
 
-    # ルールで文章を整える
-    text = polish_text(text)
-    log.info(f"投稿文章 ({len(text)}文字): {text}")
+        if dry_run:
+            continue
+
+        try:
+            thread_id = threads_post(text, user_id, token)
+            log.info(f"投稿完了 {i}/{len(posts)} thread_id={thread_id}")
+        except Exception as e:
+            log.error(f"投稿失敗 {i}/{len(posts)}: {e}")
+            continue
+
+        if i < len(posts):
+            time.sleep(10)
 
     if dry_run:
         log.info("[DRY RUN] 投稿はスキップしました。")
-        return
-
-    # Threads 投稿
-    try:
-        thread_id = threads_post(text, user_id, token)
-        log.info(f"投稿完了 thread_id={thread_id}")
-    except Exception as e:
-        log.error(f"投稿失敗: {e}")
 
 
 # ─────────────────────────────────────────────
@@ -257,7 +163,7 @@ def run_scheduler(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="ダイエット情報を自動収集して Threads に定期投稿",
+        description="毎日の星座ランキングを Claude API で生成して Threads に定期投稿",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 例:

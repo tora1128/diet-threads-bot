@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""ダイエット情報収集ツール — Web & note.com & X.com から情報を集めて表示する"""
+"""占い情報収集ツール — Web & note.com & X.com から情報を集めて表示する"""
 
 import argparse
 import re
@@ -242,13 +242,13 @@ def render_results(results: list[dict], source_label: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="ダイエット情報収集ツール",
+        description="占い情報収集ツール",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 例:
   python diet_tool.py
-  python diet_tool.py -q "糖質制限 レシピ"
-  python diet_tool.py -q "intermittent fasting" -n 5
+  python diet_tool.py -q "星座占い 恋愛"
+  python diet_tool.py -q "タロット占い" -n 5
   python diet_tool.py --source web
   python diet_tool.py --source note --min-likes 100
   python diet_tool.py --no-buzz          # バズ優先を無効化
@@ -256,8 +256,8 @@ def main() -> None:
     )
     parser.add_argument(
         "-q", "--query",
-        default="ダイエット",
-        help="検索キーワード (デフォルト: ダイエット)",
+        default="占い",
+        help="検索キーワード (デフォルト: 占い)",
     )
     parser.add_argument(
         "-n", "--num",
@@ -289,7 +289,7 @@ def main() -> None:
     buzz_label = "[bold yellow]🔥 バズ優先[/bold yellow]" if args.buzz else "[dim]通常順[/dim]"
     console.print(
         Panel.fit(
-            f"[bold green]ダイエット情報収集ツール[/bold green]\n"
+            f"[bold green]占い情報収集ツール[/bold green]\n"
             f"[dim]キーワード: [bold]{args.query}[/bold]  |  "
             f"件数: {args.num}  |  ソース: {args.source}[/dim]  |  {buzz_label}",
             border_style="green",
