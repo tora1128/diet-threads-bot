@@ -2,7 +2,7 @@ name: 星座ランキング Auto Post
 
 on:
   schedule:
-    - cron: '0 9 * * *'    # 毎日 18:00 JST狙い（UTC 9:00)
+    - cron: '0 9 * * *'    # 毎日 18:00 JST固定（UTC 9:00）
   workflow_dispatch:        # 手動実行ボタン（テスト用）
 
 jobs:
