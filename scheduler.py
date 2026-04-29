@@ -30,7 +30,7 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 
-POST_TIME = datetime.time(18, 0)  # 毎日 18:00 JST に固定
+POST_TIME = datetime.time(18, 0)  # 毎日 18:00 JST に固定（UTC 9:00）
 
 
 # ─────────────────────────────────────────────
