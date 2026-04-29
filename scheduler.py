@@ -30,7 +30,7 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 
-POST_TIME = datetime.time(7, 0)  # 毎日 07:00 JST に固定
+POST_TIME = datetime.time(18, 0)  # 毎日 18:00 JST に固定
 
 
 # ─────────────────────────────────────────────
@@ -94,7 +94,7 @@ def run_scheduler(dry_run: bool = False) -> None:
         )
         sys.exit(1)
 
-    log.info(f"スケジューラー起動 | 毎日 07:00 JST | dry_run={dry_run}")
+    log.info(f"スケジューラー起動 | 毎日 18:00 JST | dry_run={dry_run}")
 
     while True:
         now = datetime.datetime.now()
@@ -121,7 +121,7 @@ def run_scheduler(dry_run: bool = False) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="毎日 07:00 JST に星座ランキングを Threads に投稿",
+        description="毎日 18:00 JST に星座ランキングを Threads に投稿",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 例:
