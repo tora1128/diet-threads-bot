@@ -43,11 +43,11 @@ POST_TIME = datetime.time(18, 0)  # 毎日 18:00 JST に固定（UTC 9:00）
 
 def run_once(user_id: str, token: str, dry_run: bool = False) -> None:
     """星座ランキング生成（3投稿）→ Threads に順次投稿"""
-    today = datetime.date.today()
-    log.info(f"星座ランキング生成中 ({today})")
+    tomorrow = datetime.date.today() + datetime.timedelta(days=1)
+    log.info(f"星座ランキング生成中 ({tomorrow})")
 
     try:
-        posts = generate_horoscope_posts(today)
+        posts = generate_horoscope_posts(tomorrow)
     except Exception as e:
         log.error(f"Claude API エラー: {e}")
         return

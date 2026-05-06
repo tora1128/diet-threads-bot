@@ -56,6 +56,14 @@ _LOW = [
     ("焦りは禁物な一日",       "急ごうとするほど空回りしやすい日。ゆっくり丁寧に進めることが吉。"),
     ("言葉選びに慎重に",       "思ったことをすぐ口にすると誤解を生みやすい日。一呼吸おいてから話して。"),
     ("余白を作ることが吉",     "予定を詰め込みすぎると疲弊する日。意識的に余白を作ることで運気が整う。"),
+    ("無理は禁物な一日",       "頑張りすぎると後でガクッとくる日。今日は省エネで過ごすのが正解。"),
+    ("深呼吸して落ち着いて",   "小さなことが気になりやすい日。深呼吸ひとつで気持ちが整うことも。"),
+    ("振り回されないで",       "他人の意見が気になりやすい日。自分の軸をしっかり持つことが大切。"),
+    ("出費には要注意",         "財布のひもが緩みやすい日。必要かどうかをひと呼吸おいて考えてみて。"),
+    ("睡眠を大切にして",       "疲れが抜けにくい日。早めに休んで明日への英気を養っておこう。"),
+    ("一人の時間を作って",     "人に合わせすぎると消耗しやすい日。一人でリセットする時間が吉。"),
+    ("判断は明日に持ち越して", "今日下した決断は後悔しやすい。急がず、冷静になれる明日まで待とう。"),
+    ("深追いは禁物",           "こだわりすぎると空回りしやすい日。手放す勇気が運気を上向かせるカギ。"),
 ]
 
 
@@ -74,13 +82,16 @@ def generate_horoscope_posts(date: datetime.date) -> list[str]:
     """3投稿分のテキストリストを返す（API不要）"""
     date_str = f"{date.month}/{date.day}({_WEEKDAYS[date.weekday()]})"
     ranking = _make_ranking(date)
-    base = date.toordinal() * 100
+    rng = random.Random(date.toordinal() + 1)
+    high_pool = rng.sample(_HIGH, 3)
+    mid_pool  = rng.sample(_MID,  3)
+    low_pool  = rng.sample(_LOW,  6)
 
     # ── 投稿1: 1〜3位 ──
     lines = ["📊 今日の星座ランキング", date_str]
     medals = ["🥇 1位", "🥈 2位", "🥉 3位"]
     for i, medal in enumerate(medals):
-        headline, body = _pick(_HIGH, base + i)
+        headline, body = high_pool[i]
         lines += ["", f"{medal}：{ranking[i]}", headline, body]
     lines += ["", "当てはまる方は星座で教えてね✨ 今日も頑張ろう！"]
     post1 = "\n".join(lines)
@@ -88,14 +99,14 @@ def generate_horoscope_posts(date: datetime.date) -> list[str]:
     # ── 投稿2: 4〜6位 ──
     lines = ["✨ 続いて4〜6位の星座", date_str]
     for i in range(3, 6):
-        headline, body = _pick(_MID, base + i)
+        headline, body = mid_pool[i - 3]
         lines += ["", f"{i + 1}位：{ranking[i]}", headline, body]
     post2 = "\n".join(lines)
 
-    # ── 投稿3: 7〜8位 ──
-    lines = ["⚠️ 今日は慎重に…7〜8位", date_str]
-    for i in range(6, 8):
-        headline, body = _pick(_LOW, base + i)
+    # ── 投稿3: 7〜12位 ──
+    lines = ["⚠️ 今日は慎重に…7〜12位", date_str]
+    for i in range(6, 12):
+        headline, body = low_pool[i - 6]
         lines += ["", f"{i + 1}位：{ranking[i]}", headline, body]
     post3 = "\n".join(lines)
 
@@ -103,7 +114,7 @@ def generate_horoscope_posts(date: datetime.date) -> list[str]:
 
 
 if __name__ == "__main__":
-    posts = generate_horoscope_posts(datetime.date.today())
+    posts = generate_horoscope_posts(datetime.date.today() + datetime.timedelta(days=1))
     for i, p in enumerate(posts, 1):
         print(f"=== 投稿{i} ({len(p)}文字) ===")
         print(p)
