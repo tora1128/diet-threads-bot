@@ -121,7 +121,7 @@ def run_scheduler(dry_run: bool = False) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="毎日 18:00 JST に星座ランキングを Threads に投稿",
+        description="毎日 16:00 JST に星座ランキングを Threads に投稿",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 例:
