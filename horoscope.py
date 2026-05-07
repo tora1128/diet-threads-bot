@@ -104,7 +104,7 @@ def generate_horoscope_posts(date: datetime.date) -> list[str]:
     low_pool  = rng.sample(_LOW,  6)
 
     # ── 投稿1: 1〜3位 ──
-    lines = ["📊 今日の星座ランキング", date_str]
+    lines = ["📊 明日の星座ランキング", date_str]
     medals = ["🥇 1位", "🥈 2位", "🥉 3位"]
     for i, medal in enumerate(medals):
         headline, body = high_pool[i]
