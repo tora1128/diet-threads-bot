@@ -2,8 +2,22 @@ name: 星座ランキング Auto Post
 
 on:
   schedule:
-    - cron: '0 6 * * *'    # 毎日 15:00 JST固定（UTC 7:00）
-  workflow_dispatch:        # 手動実行ボタン（テスト用）
+    - cron: '24 22 * * *'   # 07:24 JST = UTC 22:24 (仕事運)
+    - cron: '3 3 * * *'     # 12:03 JST = UTC 03:03 (金運)
+    - cron: '13 8 * * *'    # 17:13 JST = UTC 08:13 (恋愛運)
+    - cron: '22 10 * * *'   # 19:22 JST = UTC 10:22 (総合運)
+  workflow_dispatch:
+    inputs:
+      category:
+        description: '投稿カテゴリ'
+        required: true
+        default: '総合運'
+        type: choice
+        options:
+          - 仕事運
+          - 金運
+          - 恋愛運
+          - 総合運
 
 jobs:
   post:
@@ -24,9 +38,23 @@ jobs:
       - name: 依存ライブラリをインストール
         run: pip install -r requirements.txt
 
-      - name: 現在の日本時間を表示
+      - name: 実行時刻とカテゴリを決定
         run: |
           echo "実行時刻（JST）: $(date '+%Y-%m-%d %H:%M:%S %Z')"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            CAT="${{ inputs.category }}"
+          else
+            HOUR=$(date '+%-H')
+            case $HOUR in
+              7)  CAT="仕事運" ;;
+              12) CAT="金運" ;;
+              17) CAT="恋愛運" ;;
+              19) CAT="総合運" ;;
+              *)  CAT="総合運" ;;
+            esac
+          fi
+          echo "CATEGORY=$CAT" >> $GITHUB_ENV
+          echo "カテゴリ: $CAT"
 
       - name: シークレット確認
         env:
@@ -41,4 +69,5 @@ jobs:
         env:
           THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
           THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
-        run: python post_once.py
+          CATEGORY: ${{ env.CATEGORY }}
+        run: python post_once.py --category "$CATEGORY"

@@ -12,10 +12,6 @@ sys.path.insert(0, os.path.dirname(__file__))
 from generate_sentences import threads_post
 from horoscope import generate_horoscope_posts
 
-# ─────────────────────────────────────────────
-# ログ設定
-# ─────────────────────────────────────────────
-
 LOG_FILE = os.path.join(os.path.dirname(__file__), "scheduler.log")
 
 logging.basicConfig(
@@ -29,27 +25,37 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
+# (投稿時刻JST, カテゴリ, 日付オフセット)
+# 日付オフセット1 = 翌日の日付を表示
+SCHEDULE = [
+    (datetime.time(7, 24),  "仕事運", 0),
+    (datetime.time(12, 3),  "金運",   0),
+    (datetime.time(17, 13), "恋愛運", 0),
+    (datetime.time(19, 22), "総合運", 1),
+]
 
-POST_TIME = datetime.time(15, 0)  # 毎日 15:00 JST に固定（UTC 6:00）
+
+def next_scheduled(now: datetime.datetime) -> tuple:
+    """次に実行すべき (実行日時, カテゴリ, 日付オフセット) を返す"""
+    today = now.date()
+    candidates = []
+    for t, cat, date_offset in SCHEDULE:
+        dt = datetime.datetime.combine(today, t)
+        if dt <= now:
+            dt += datetime.timedelta(days=1)
+        candidates.append((dt, cat, date_offset))
+    return min(candidates, key=lambda x: x[0])
 
 
-# ─────────────────────────────────────────────
-# 星座ランキング生成
-# ─────────────────────────────────────────────
-
-# ─────────────────────────────────────────────
-# 1回分の投稿処理
-# ─────────────────────────────────────────────
-
-def run_once(user_id: str, token: str, dry_run: bool = False) -> None:
+def run_once(user_id: str, token: str, category: str, date_offset: int = 0, dry_run: bool = False) -> None:
     """星座ランキング生成（3投稿）→ Threads に順次投稿"""
-    tomorrow = datetime.date.today() + datetime.timedelta(days=1)
-    log.info(f"星座ランキング生成中 ({tomorrow})")
+    target_date = datetime.date.today() + datetime.timedelta(days=date_offset)
+    log.info(f"星座ランキング生成中 [{category}] 日付:{target_date}")
 
     try:
-        posts = generate_horoscope_posts(tomorrow)
+        posts = generate_horoscope_posts(target_date, category)
     except Exception as e:
-        log.error(f"Claude API エラー: {e}")
+        log.error(f"生成エラー: {e}")
         return
 
     if not posts:
@@ -69,7 +75,7 @@ def run_once(user_id: str, token: str, dry_run: bool = False) -> None:
             thread_id = threads_post(text, user_id, token, reply_to_id=parent_id)
             log.info(f"投稿完了 {i}/{len(posts)} thread_id={thread_id}")
             if i == 1:
-                parent_id = thread_id  # 2・3投稿目は1投稿目のコメント欄へ
+                parent_id = thread_id
         except Exception as e:
             log.error(f"投稿失敗 {i}/{len(posts)}: {e}")
             continue
@@ -77,10 +83,6 @@ def run_once(user_id: str, token: str, dry_run: bool = False) -> None:
         if i < len(posts):
             time.sleep(10)
 
-
-# ─────────────────────────────────────────────
-# メインループ
-# ─────────────────────────────────────────────
 
 def run_scheduler(dry_run: bool = False) -> None:
     user_id = os.environ.get("THREADS_USER_ID", "")
@@ -94,34 +96,27 @@ def run_scheduler(dry_run: bool = False) -> None:
         )
         sys.exit(1)
 
-    log.info(f"スケジューラー起動 | 毎日 15:00 JST | dry_run={dry_run}")
+    schedule_str = " / ".join(f"{t.strftime('%H:%M')}[{cat}]" for t, cat, _ in SCHEDULE)
+    log.info(f"スケジューラー起動 | {schedule_str} | dry_run={dry_run}")
 
     while True:
         now = datetime.datetime.now()
-        target = datetime.datetime.combine(now.date(), POST_TIME)
-        if target <= now:
-            target = datetime.datetime.combine(
-                now.date() + datetime.timedelta(days=1), POST_TIME
-            )
+        target_dt, category, date_offset = next_scheduled(now)
 
-        wait_sec = (target - now).total_seconds()
+        wait_sec = (target_dt - now).total_seconds()
         log.info(
-            f"次回投稿: {target.strftime('%Y-%m-%d %H:%M')} まで "
+            f"次回投稿: {target_dt.strftime('%Y-%m-%d %H:%M')} [{category}] まで "
             f"{int(wait_sec // 3600)}時間{int((wait_sec % 3600) // 60)}分待機"
         )
         time.sleep(wait_sec)
 
-        log.info(f"===== 投稿開始 {datetime.datetime.now().strftime('%H:%M')} =====")
-        run_once(user_id, token, dry_run)
+        log.info(f"===== 投稿開始 [{category}] {datetime.datetime.now().strftime('%H:%M')} =====")
+        run_once(user_id, token, category, date_offset, dry_run)
 
-
-# ─────────────────────────────────────────────
-# エントリーポイント
-# ─────────────────────────────────────────────
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="毎日 15:00 JST に星座ランキングを Threads に投稿",
+        description="1日4回（仕事運/金運/恋愛運/総合運）星座ランキングを Threads に投稿",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 例:
@@ -132,7 +127,7 @@ def main() -> None:
   python3 scheduler.py --dry-run
 
 ログ確認:
-  tail -f ~/diet-tool/scheduler.log
+  tail -f scheduler.log
 
 停止:
   pkill -f scheduler.py
