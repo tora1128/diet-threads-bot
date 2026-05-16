@@ -44,13 +44,12 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             CAT="${{ inputs.category }}"
           else
-            HOUR=$(date '+%-H')
-            case $HOUR in
-              7)  CAT="仕事運" ;;
-              12) CAT="金運" ;;
-              17) CAT="恋愛運" ;;
-              19) CAT="総合運" ;;
-              *)  CAT="総合運" ;;
+            case "${{ github.event.schedule }}" in
+              "24 22 * * *") CAT="仕事運" ;;
+              "3 3 * * *")   CAT="金運" ;;
+              "13 8 * * *")  CAT="恋愛運" ;;
+              "22 10 * * *") CAT="総合運" ;;
+              *)             CAT="総合運" ;;
             esac
           fi
           echo "CATEGORY=$CAT" >> $GITHUB_ENV
