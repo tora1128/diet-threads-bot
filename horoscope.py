@@ -497,6 +497,22 @@ _LUCKY_EMOJIS = [
 ]
 
 
+def _shorten_body(body: str, max_len: int = 22) -> str:
+    """本文を自然な区切りでmax_len文字以内に短縮する"""
+    if len(body) <= max_len:
+        return body
+    # 最初の。で1文目だけ取れる場合はそれを使う
+    first = body.split('。')[0]
+    if first and len(first) + 1 <= max_len:
+        return first + '。'
+    # 。で区切れない場合は、の位置で切る
+    cut = body[:max_len]
+    for i in range(len(cut) - 1, max_len // 2, -1):
+        if cut[i] in '、。':
+            return cut[:i + 1]
+    return cut
+
+
 def _pick(pool: list, rng: random.Random):
     return rng.choice(pool)
 
@@ -539,10 +555,8 @@ def generate_horoscope_posts(date: datetime.date, category: str = "総合運") -
         lines += ["", f"{i + 1}位：{ranking[i]}", headline, body]
     for i in range(6, 12):
         headline, body = low_pool[i - 6]
-        lines += ["", f"{i + 1}位：{ranking[i]}", headline, body]
-    # 500文字超過時は末尾エントリ（4行）を削除
-    while len("\n".join(lines)) > 500 and len(lines) > 6:
-        lines = lines[:-4]
+        short_body = _shorten_body(body)
+        lines += ["", f"{i + 1}位：{ranking[i]}", headline, short_body]
     post2 = "\n".join(lines)
 
     return [post1, post2]
