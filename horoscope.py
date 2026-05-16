@@ -532,7 +532,20 @@ def generate_horoscope_posts(date: datetime.date, category: str = "総合運") -
     lines += ["", closing, "", f"本日ラッキーな方は「{lucky_emoji}」で押して教えてね！"]
     post1 = "\n".join(lines)
 
-    return [post1]
+    # ── 投稿2: 4〜12位 ──
+    lines = [header2, date_str]
+    for i in range(3, 6):
+        headline, body = mid_pool[i - 3]
+        lines += ["", f"{i + 1}位：{ranking[i]}", headline, body]
+    for i in range(6, 12):
+        headline, body = low_pool[i - 6]
+        lines += ["", f"{i + 1}位：{ranking[i]}", headline, body]
+    # 500文字超過時は末尾エントリ（4行）を削除
+    while len("\n".join(lines)) > 500 and len(lines) > 6:
+        lines = lines[:-4]
+    post2 = "\n".join(lines)
+
+    return [post1, post2]
 
 
 if __name__ == "__main__":
