@@ -9,6 +9,12 @@ SIGNS = [
     "天秤座", "蠍座", "射手座", "山羊座", "水瓶座", "魚座",
 ]
 
+_SIGN_EMOJI = {
+    "牡羊座": "♈️", "牡牛座": "♉️", "双子座": "♊️", "蟹座": "♋️",
+    "獅子座": "♌️", "乙女座": "♍️", "天秤座": "♎️", "蠍座": "♏️",
+    "射手座": "♐️", "山羊座": "♑️", "水瓶座": "♒️", "魚座": "♓️",
+}
+
 CATEGORIES = ["仕事運", "金運", "恋愛運", "総合運"]
 
 _WEEKDAYS = ["月", "火", "水", "木", "金", "土", "日"]
@@ -507,7 +513,7 @@ def _shorten_body(body: str, max_len: int = 22) -> str:
         return first + '。'
     # 。で区切れない場合は、の位置で切る
     cut = body[:max_len]
-    for i in range(len(cut) - 1, max_len // 2, -1):
+    for i in range(len(cut) - 1, -1, -1):
         if cut[i] in '、。':
             return cut[:i + 1]
     return cut
@@ -544,7 +550,8 @@ def generate_horoscope_posts(date: datetime.date, category: str = "総合運") -
     medals = ["🥇 1位", "🥈 2位", "🥉 3位"]
     for i, medal in enumerate(medals):
         headline, body = high_pool[i]
-        lines += ["", f"{medal}：{ranking[i]}", headline, body]
+        sign = ranking[i]
+        lines += ["", f"{medal}：{_SIGN_EMOJI[sign]}{sign}", headline, body]
     lines += ["", closing, "", f"本日ラッキーな方は「{lucky_emoji}」で押して教えてね！"]
     post1 = "\n".join(lines)
 
@@ -552,11 +559,13 @@ def generate_horoscope_posts(date: datetime.date, category: str = "総合運") -
     lines = [header2, date_str]
     for i in range(3, 6):
         headline, body = mid_pool[i - 3]
-        lines += ["", f"{i + 1}位：{ranking[i]}", headline, body]
+        sign = ranking[i]
+        lines += ["", f"{i + 1}位：{_SIGN_EMOJI[sign]}{sign}", headline, body]
     for i in range(6, 12):
         headline, body = low_pool[i - 6]
+        sign = ranking[i]
         short_body = _shorten_body(body)
-        lines += ["", f"{i + 1}位：{ranking[i]}", headline, short_body]
+        lines += ["", f"{i + 1}位：{_SIGN_EMOJI[sign]}{sign}", headline, short_body]
     post2 = "\n".join(lines)
 
     return [post1, post2]
