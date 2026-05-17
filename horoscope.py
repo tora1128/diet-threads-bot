@@ -523,7 +523,7 @@ def _pick(pool: list, rng: random.Random):
     return rng.choice(pool)
 
 
-def generate_horoscope_posts(date: datetime.date, category: str = "総合運") -> list[str]:
+def generate_horoscope_posts(date: datetime.date, category: str = "総合運", rank_date: datetime.date = None) -> list[str]:
     """3投稿分のテキストリストを返す（API不要）"""
     if category not in _CONTENT:
         raise ValueError(f"未対応のカテゴリ: {category}")
@@ -531,10 +531,13 @@ def generate_horoscope_posts(date: datetime.date, category: str = "総合運") -
     content = _CONTENT[category]
     cat_idx = CATEGORIES.index(category)
 
-    date_str = f"{date.month}/{date.day}({_WEEKDAYS[date.weekday()]})"
-    ranking = _make_ranking(date, cat_idx)
+    # date=表示日付、rank_date=ランキング生成基準日（省略時はdateと同じ）
+    rank_date = rank_date or date
 
-    seed = date.toordinal() + cat_idx * 1000
+    date_str = f"{date.month}/{date.day}({_WEEKDAYS[date.weekday()]})"
+    ranking = _make_ranking(rank_date, cat_idx)
+
+    seed = rank_date.toordinal() + cat_idx * 1000
     rng = random.Random(seed + 1)
     high_pool = rng.sample(content["high"], 3)
     mid_pool  = rng.sample(content["mid"],  3)
