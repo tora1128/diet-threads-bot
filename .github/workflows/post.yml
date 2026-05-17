@@ -1,11 +1,6 @@
 name: 星座ランキング Auto Post
 
 on:
-  schedule:
-    - cron: '24 22 * * *'   # 07:24 JST = UTC 22:24 (仕事運)
-    - cron: '3 3 * * *'     # 12:03 JST = UTC 03:03 (金運)
-    - cron: '13 8 * * *'    # 17:13 JST = UTC 08:13 (恋愛運)
-    - cron: '22 10 * * *'   # 19:22 JST = UTC 10:22 (総合運)
   workflow_dispatch:
     inputs:
       category:
