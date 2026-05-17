@@ -69,13 +69,10 @@ def run_once(user_id: str, token: str, category: str, date_offset: int = 0, dry_
         log.info("[DRY RUN] 投稿はスキップしました。")
         return
 
-    parent_id = None
     for i, text in enumerate(posts, 1):
         try:
-            thread_id = threads_post(text, user_id, token, reply_to_id=parent_id)
+            thread_id = threads_post(text, user_id, token)
             log.info(f"投稿完了 {i}/{len(posts)} thread_id={thread_id}")
-            if i == 1:
-                parent_id = thread_id
         except Exception as e:
             log.error(f"投稿失敗 {i}/{len(posts)}: {e}")
             continue
