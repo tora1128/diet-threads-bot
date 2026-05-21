@@ -28,8 +28,6 @@ log = logging.getLogger(__name__)
 # (投稿時刻JST, カテゴリ, 日付オフセット)
 # 日付オフセット1 = 翌日の日付を表示
 SCHEDULE = [
-    (datetime.time(7, 24),  "仕事運", 0),
-    (datetime.time(12, 3),  "金運",   0),
     (datetime.time(17, 13), "恋愛運", 0),
     (datetime.time(19, 22), "総合運", 1),
 ]
