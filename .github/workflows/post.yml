@@ -9,8 +9,6 @@ on:
         default: '総合運'
         type: choice
         options:
-          - 仕事運
-          - 金運
           - 恋愛運
           - 総合運
 
@@ -36,17 +34,7 @@ jobs:
       - name: 実行時刻とカテゴリを決定
         run: |
           echo "実行時刻（JST）: $(date '+%Y-%m-%d %H:%M:%S %Z')"
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            CAT="${{ inputs.category }}"
-          else
-            case "${{ github.event.schedule }}" in
-              "24 22 * * *") CAT="仕事運" ;;
-              "3 3 * * *")   CAT="金運" ;;
-              "13 8 * * *")  CAT="恋愛運" ;;
-              "22 10 * * *") CAT="総合運" ;;
-              *)             CAT="総合運" ;;
-            esac
-          fi
+          CAT="${{ inputs.category }}"
           echo "CATEGORY=$CAT" >> $GITHUB_ENV
           echo "カテゴリ: $CAT"
 
