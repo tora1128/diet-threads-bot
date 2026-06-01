@@ -556,7 +556,7 @@ def generate_horoscope_posts(date: datetime.date, category: str = "総合運", r
         sign = ranking[i]
         lines += ["", f"{medal}：{_SIGN_EMOJI[sign]}{sign}", headline, body]
     if category in ("恋愛運", "総合運"):
-        lines += ["", closing, "", f"本日ラッキーな方は「{lucky_emoji}」で押して教えてね！", "", "LINEを始めてから見えてきたあなたの運気の流れを、無料の鑑定書にまとめています。気になる方はプロフィールのLINEからどうぞ🌙"]
+        lines += ["", closing, "", f"本日ラッキーな方は「{lucky_emoji}」で押して教えてね！", "", "あなたの運気の流れを、無料の鑑定書にまとめています。気になる方はDMで「鑑定」と送ってください🌙"]
     else:
         lines += ["", closing, "", f"本日ラッキーな方は「{lucky_emoji}」で押して教えてね！"]
     post1 = "\n".join(lines)
