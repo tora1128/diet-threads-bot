@@ -548,6 +548,10 @@ def generate_horoscope_posts(date: datetime.date, category: str = "総合運", r
     # ── 投稿1: 1〜5位 ──
     day_label = "明日" if category == "総合運" else "今日"
     lines = [f"🔮 {date_str} {day_label}の{category}TOP5"]
+    if category == "恋愛運":
+        lines.append("復縁・連絡・関係修復に追い風の日。気になる星座は保存して見返してね。")
+    elif category == "総合運":
+        lines.append("流れを変えたい人はここをチェック。上位星座ほど一歩踏み出すチャンス。")
     medals = ["🥇 1位", "🥈 2位", "🥉 3位", "4位", "5位"]
     rank_items = high_pool + mid_pool
     for i, medal in enumerate(medals):
