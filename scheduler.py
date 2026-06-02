@@ -115,7 +115,7 @@ def run_scheduler(dry_run: bool = False) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="1日4回（仕事運/金運/恋愛運/総合運）星座ランキングを Threads に投稿",
+        description="星座ランキング（金運/恋愛運/総合運）を Threads に投稿",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 例:

@@ -11,7 +11,7 @@ from scheduler import run_once
 parser = argparse.ArgumentParser(description="指定カテゴリの星座ランキングを1回投稿する")
 parser.add_argument(
     "--category",
-    choices=["仕事運", "金運", "恋愛運", "総合運"],
+    choices=["金運", "恋愛運", "総合運"],
     default=os.environ.get("CATEGORY", "総合運"),
     help="投稿カテゴリ（環境変数 CATEGORY でも指定可）",
 )
