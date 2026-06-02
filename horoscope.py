@@ -36,14 +36,14 @@ _CONTENT = {
             "🌟 今日の仕事運ベスト3",
         ],
         "headers2": [
-            "📋 続いて4〜12位の仕事運",
-            "🌿 4〜12位の仕事運はこちら",
-            "💠 4〜12位：残りの仕事運",
-            "📌 仕事運4〜12位をチェック",
-            "🔵 4〜12位の仕事運",
-            "🌱 4〜12位：仕事運まとめ",
-            "📎 4〜12位の仕事運",
-            "🔹 仕事運4〜12位",
+            "📋 続いて4〜5位の仕事運",
+            "🌿 4〜5位の仕事運はこちら",
+            "💠 4〜5位：続く仕事運",
+            "📌 仕事運4〜5位をチェック",
+            "🔵 4〜5位の仕事運",
+            "🌱 4〜5位：仕事運まとめ",
+            "📎 4〜5位の仕事運",
+            "🔹 仕事運4〜5位",
         ],
         "closings": [
             "あなたの星座はどうでしたか？コメントで教えてね💬\n\n今日も自分のペースで、丁寧に仕事に向き合えますように💼",
@@ -151,14 +151,14 @@ _CONTENT = {
             "⭐ 今日の金運ランキング発表",
         ],
         "headers2": [
-            "📋 続いて4〜12位の金運",
-            "🌿 4〜12位の金運はこちら",
-            "💠 4〜12位：残りの金運",
-            "📌 金運4〜12位をチェック",
-            "🔵 4〜12位の金運",
-            "🌱 4〜12位：金運まとめ",
-            "💼 4〜12位の金運チェック",
-            "🔹 金運4〜12位",
+            "📋 続いて4〜5位の金運",
+            "🌿 4〜5位の金運はこちら",
+            "💠 4〜5位：続く金運",
+            "📌 金運4〜5位をチェック",
+            "🔵 4〜5位の金運",
+            "🌱 4〜5位：金運まとめ",
+            "💼 4〜5位の金運チェック",
+            "🔹 金運4〜5位",
         ],
         "closings": [
             "あなたの星座はどうでしたか？コメントで教えてね💬\n\n今日も堅実に、でも自分へのご褒美も忘れずに💰",
@@ -266,14 +266,14 @@ _CONTENT = {
             "⭐ 今日の恋愛運チェック",
         ],
         "headers2": [
-            "📋 続いて4〜12位の恋愛運",
-            "🌿 4〜12位の恋愛運はこちら",
-            "💠 4〜12位：残りの恋愛運",
-            "📌 恋愛運4〜12位をチェック",
-            "🔵 4〜12位の恋愛運",
-            "🌱 4〜12位：恋愛運まとめ",
-            "💜 4〜12位の恋愛運チェック",
-            "🔹 恋愛運4〜12位",
+            "📋 続いて4〜5位の恋愛運",
+            "🌿 4〜5位の恋愛運はこちら",
+            "💠 4〜5位：続く恋愛運",
+            "📌 恋愛運4〜5位をチェック",
+            "🔵 4〜5位の恋愛運",
+            "🌱 4〜5位：恋愛運まとめ",
+            "💜 4〜5位の恋愛運チェック",
+            "🔹 恋愛運4〜5位",
         ],
         "closings": [
             "あなたの星座はどうでしたか？コメントで教えてね💬\n\n愛は、与えるほど豊かになるもの。今日も素直な気持ちで過ごしてね💕",
@@ -381,14 +381,14 @@ _CONTENT = {
             "📊 明日の総合運ベスト3",
         ],
         "headers2": [
-            "✨ 続いて明日の総合運4〜12位",
-            "🌿 総合運4〜12位はこちら",
-            "📋 明日の総合運4〜12位の運勢",
-            "🍀 総合運4〜12位の星座をチェック",
-            "☁️ 続いて総合運4〜12位",
-            "🌱 明日の総合運4〜12位",
-            "💠 総合運4〜12位の星座はこちら",
-            "🔵 総合運4〜12位の星座たち",
+            "✨ 続いて明日の総合運4〜5位",
+            "🌿 総合運4〜5位はこちら",
+            "📋 明日の総合運4〜5位の運勢",
+            "🍀 総合運4〜5位の星座をチェック",
+            "☁️ 続いて総合運4〜5位",
+            "🌱 明日の総合運4〜5位",
+            "💠 総合運4〜5位の星座はこちら",
+            "🔵 総合運4〜5位の星座たち",
         ],
         "closings": [
             "明日に備えて、今夜はゆっくり休んでね✨\n\n明日も自分らしく、一歩一歩丁寧に過ごしていきましょう。\n\nどんな日も、あなたの味方でいます💫",
@@ -524,7 +524,7 @@ def _pick(pool: list, rng: random.Random):
 
 
 def generate_horoscope_posts(date: datetime.date, category: str = "総合運", rank_date: datetime.date = None) -> list[str]:
-    """3投稿分のテキストリストを返す（API不要）"""
+    """2投稿分のテキストリストを返す（API不要）"""
     if category not in _CONTENT:
         raise ValueError(f"未対応のカテゴリ: {category}")
 
@@ -540,8 +540,7 @@ def generate_horoscope_posts(date: datetime.date, category: str = "総合運", r
     seed = rank_date.toordinal() + cat_idx * 1000
     rng = random.Random(seed + 1)
     high_pool = rng.sample(content["high"], 3)
-    mid_pool  = rng.sample(content["mid"],  3)
-    low_pool  = rng.sample(content["low"],  6)
+    mid_pool  = rng.sample(content["mid"],  2)
 
     header1      = random.Random(seed + 10).choice(content["headers1"])
     header2      = random.Random(seed + 11).choice(content["headers2"])
@@ -561,17 +560,12 @@ def generate_horoscope_posts(date: datetime.date, category: str = "総合運", r
         lines += ["", closing, "", f"本日ラッキーな方は「{lucky_emoji}」で押して教えてね！"]
     post1 = "\n".join(lines)
 
-    # ── 投稿2: 4〜12位 ──
+    # ── 投稿2: 4〜5位 ──
     lines = [header2, date_str]
-    for i in range(3, 6):
+    for i in range(3, 5):
         headline, body = mid_pool[i - 3]
         sign = ranking[i]
         lines += ["", f"{i + 1}位：{_SIGN_EMOJI[sign]}{sign}", headline, body]
-    for i in range(6, 12):
-        headline, body = low_pool[i - 6]
-        sign = ranking[i]
-        short_body = _shorten_body(body)
-        lines += ["", f"{i + 1}位：{_SIGN_EMOJI[sign]}{sign}", headline, short_body]
     post2 = "\n".join(lines)
 
     return [post1, post2]
