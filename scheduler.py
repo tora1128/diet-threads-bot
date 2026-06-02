@@ -46,7 +46,7 @@ def next_scheduled(now: datetime.datetime) -> tuple:
 
 
 def run_once(user_id: str, token: str, category: str, date_offset: int = 0, dry_run: bool = False) -> None:
-    """星座ランキング生成（2投稿）→ Threads に順次投稿"""
+    """星座ランキング生成（1投稿）→ Threads に投稿"""
     today = datetime.date.today()
     target_date = today + datetime.timedelta(days=date_offset)
     log.info(f"星座ランキング生成中 [{category}] 日付:{target_date}")

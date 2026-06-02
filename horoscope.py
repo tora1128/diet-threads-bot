@@ -524,7 +524,7 @@ def _pick(pool: list, rng: random.Random):
 
 
 def generate_horoscope_posts(date: datetime.date, category: str = "総合運", rank_date: datetime.date = None) -> list[str]:
-    """2投稿分のテキストリストを返す（API不要）"""
+    """1投稿分のテキストリストを返す（API不要）"""
     if category not in _CONTENT:
         raise ValueError(f"未対応のカテゴリ: {category}")
 
@@ -542,33 +542,25 @@ def generate_horoscope_posts(date: datetime.date, category: str = "総合運", r
     high_pool = rng.sample(content["high"], 3)
     mid_pool  = rng.sample(content["mid"],  2)
 
-    header1      = random.Random(seed + 10).choice(content["headers1"])
-    header2      = random.Random(seed + 11).choice(content["headers2"])
     closing      = random.Random(seed + 13).choice(content["closings"])
     lucky_emoji  = random.Random(seed + 20).choice(_LUCKY_EMOJIS)
 
-    # ── 投稿1: 1〜3位 ──
-    lines = [header1, date_str]
-    medals = ["🥇 1位", "🥈 2位", "🥉 3位"]
+    # ── 投稿1: 1〜5位 ──
+    day_label = "明日" if category == "総合運" else "今日"
+    lines = [f"🔮 {date_str} {day_label}の{category}TOP5"]
+    medals = ["🥇 1位", "🥈 2位", "🥉 3位", "4位", "5位"]
+    rank_items = high_pool + mid_pool
     for i, medal in enumerate(medals):
-        headline, body = high_pool[i]
+        headline, body = rank_items[i]
         sign = ranking[i]
-        lines += ["", f"{medal}：{_SIGN_EMOJI[sign]}{sign}", headline, body]
+        lines += ["", f"{medal}：{_SIGN_EMOJI[sign]}{sign}｜{headline}", _shorten_body(body, 34)]
     if category in ("恋愛運", "総合運"):
         lines += ["", closing, "", f"本日ラッキーな方は「{lucky_emoji}」で押して教えてね！", "", "あなたの運気の流れを、無料の鑑定書にまとめています。気になる方はDMで「鑑定」と送ってください🌙"]
     else:
         lines += ["", closing, "", f"本日ラッキーな方は「{lucky_emoji}」で押して教えてね！"]
     post1 = "\n".join(lines)
 
-    # ── 投稿2: 4〜5位 ──
-    lines = [header2, date_str]
-    for i in range(3, 5):
-        headline, body = mid_pool[i - 3]
-        sign = ranking[i]
-        lines += ["", f"{i + 1}位：{_SIGN_EMOJI[sign]}{sign}", headline, body]
-    post2 = "\n".join(lines)
-
-    return [post1, post2]
+    return [post1]
 
 
 if __name__ == "__main__":
