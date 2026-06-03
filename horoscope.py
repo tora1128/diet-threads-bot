@@ -497,8 +497,7 @@ def generate_horoscope_posts(date: datetime.date, category: str = "総合運", r
         headline, body = rank_items[i]
         sign = ranking[i]
         lines.append(f"{medal}：{_SIGN_EMOJI[sign]}{sign}｜{headline}")
-        if i < 3:
-            lines.append(_shorten_body(body, 42))
+        lines.append(_shorten_body(body, 42))
     lines += ["", _shorten_body(closing, 48), f"ラッキーな方は「{lucky_emoji}」で教えてね！"]
     post1 = "\n".join(lines)
 
