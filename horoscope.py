@@ -74,6 +74,36 @@ _HOOKS = {
     ],
 }
 
+_FOOT_MESSAGES = {
+    "金運": [
+        "入ってた人は、今日はお金の使い方を少しだけ意識してみて。",
+        "入ってなかった人も大丈夫。今日は無理に動かず、整えるだけでも十分。",
+        "今日の小さな選択が、あとで大きな安心につながるかも。",
+        "焦って増やすより、今あるものを大切にする日も金運の一部だよ。",
+        "上位の人はチャンスを活かして。入ってない人は守りを意識してね。",
+    ],
+    "恋愛運": [
+        "入ってた人は、今日は少しだけ自分の気持ちを信じてみて。",
+        "入ってなかった人も大丈夫。恋は焦らない方がうまくいく日もあるよ。",
+        "連絡するか迷うなら、送った後の自分が苦しくならないかも大事にして。",
+        "今日は無理に動かなくていい。でも、素直な気持ちは否定しないでね。",
+        "上位の人は小さな一歩を。入ってない人は自分を整える時間にしよう。",
+        "待つ恋はしんどいよね。今日は自分の心を少し優先してあげて。",
+        "相手の反応だけで、自分の価値を決めなくて大丈夫だよ。",
+        "恋が動く日も、心を休ませる日も、どちらもちゃんと意味があるよ。",
+    ],
+    "総合運": [
+        "入ってた人は、今日は少しだけ自分の直感を信じて動いてみて。",
+        "入ってなかった人も大丈夫。焦らず整える日として過ごしてね。",
+        "大きく変えなくていい。小さく整えるだけでも流れは変わるよ。",
+        "今日は無理に頑張りすぎず、自分のペースを守っていこう。",
+        "上位の人は追い風を活かして。入ってない人は準備の日にしてね。",
+        "うまくいかない日もあるけど、それで運が止まるわけじゃないよ。",
+        "今日できる小さな一歩を大事にして。流れはそこから変わるよ。",
+        "迷ったら、ちゃんと休むことも選択肢に入れてあげてね。",
+    ],
+}
+
 # ─────────────────────────────────────────────
 # カテゴリ別コンテンツ
 # ─────────────────────────────────────────────
@@ -482,7 +512,7 @@ def generate_horoscope_posts(date: datetime.date, category: str = "総合運", r
     high_pool = rng.sample(content["high"], 3)
     mid_pool  = rng.sample(content["mid"],  2)
 
-    closing      = random.Random(seed + 13).choice(content["closings"])
+    foot_message = random.Random(seed + 13).choice(_FOOT_MESSAGES.get(category, [""]))
     lucky_emoji  = random.Random(seed + 20).choice(_LUCKY_EMOJIS)
 
     # ── 投稿1: 1〜5位 ──
@@ -498,7 +528,7 @@ def generate_horoscope_posts(date: datetime.date, category: str = "総合運", r
         sign = ranking[i]
         lines.append(f"{medal}：{_SIGN_EMOJI[sign]}{sign}｜{headline}")
         lines.append(_shorten_body(body, 42))
-    lines += ["", _shorten_body(closing, 48), f"ラッキーな方は「{lucky_emoji}」で教えてね！"]
+    lines += ["", foot_message, f"ラッキーな方は「{lucky_emoji}」で教えてね！"]
     post1 = "\n".join(lines)
 
     return [post1]
