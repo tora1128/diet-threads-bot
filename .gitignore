@@ -1,6 +1,7 @@
 .env
 .note_session.json
 scheduler.log
+weekly_preview.txt
 __pycache__/
 *.pyc
 nohup.out
