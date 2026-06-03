@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""投稿せずに1週間分の星座ランキング文を確認するスクリプト"""
+"""投稿せずに1週間分の投稿文を確認するスクリプト"""
 
 import argparse
 import datetime
@@ -9,8 +9,9 @@ from typing import Optional
 
 sys.path.insert(0, os.path.dirname(__file__))
 from horoscope import generate_horoscope_posts
+from love_messages import generate_love_message
 
-DEFAULT_CATEGORIES = ["恋愛運", "総合運"]
+DEFAULT_CATEGORIES = ["恋愛運"]
 
 
 def parse_args() -> argparse.Namespace:
@@ -26,7 +27,7 @@ def parse_args() -> argparse.Namespace:
         nargs="+",
         choices=["金運", "恋愛運", "総合運"],
         default=DEFAULT_CATEGORIES,
-        help="対象カテゴリ（デフォルト: 恋愛運 総合運）",
+        help="夕方ランキングの対象カテゴリ（デフォルト: 恋愛運）",
     )
     parser.add_argument(
         "--start-date",
@@ -52,15 +53,29 @@ def build_preview(start_date: datetime.date, days: int, categories: list[str]) -
 
     for offset in range(days):
         today = start_date + datetime.timedelta(days=offset)
+        for post_type in ("morning_message", "noon_message"):
+            text = generate_love_message(today, post_type)
+            label = "朝の恋愛ひとこと" if post_type == "morning_message" else "昼の恋愛ひとこと"
+            sections.append(
+                "\n".join(
+                    [
+                        "=" * 40,
+                        f"{today.isoformat()} [{label}] ({len(text)}文字)",
+                        "-" * 40,
+                        text,
+                    ]
+                )
+            )
+
         for category in categories:
-            display_date = today + datetime.timedelta(days=1 if category == "総合運" else 0)
+            display_date = today + datetime.timedelta(days=1)
             posts = generate_horoscope_posts(display_date, category, rank_date=today)
             for index, text in enumerate(posts, 1):
                 sections.append(
                     "\n".join(
                         [
                             "=" * 40,
-                            f"{today.isoformat()} [{category}] 投稿{index} ({len(text)}文字)",
+                            f"{today.isoformat()} [夕方: 明日の{category}] 投稿{index} ({len(text)}文字)",
                             "-" * 40,
                             text,
                         ]

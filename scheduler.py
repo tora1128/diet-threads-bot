@@ -11,6 +11,7 @@ import time
 sys.path.insert(0, os.path.dirname(__file__))
 from generate_sentences import threads_post
 from horoscope import generate_horoscope_posts
+from love_messages import generate_love_message
 
 LOG_FILE = os.path.join(os.path.dirname(__file__), "scheduler.log")
 
@@ -25,34 +26,47 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
-# (投稿時刻JST, カテゴリ, 日付オフセット)
+# (投稿時刻JST, 投稿タイプ, カテゴリ, 日付オフセット)
 # 日付オフセット1 = 翌日の日付を表示
 SCHEDULE = [
-    (datetime.time(17, 13), "恋愛運", 0),
-    (datetime.time(19, 22), "総合運", 1),
+    (datetime.time(8, 0), "morning_message", "恋愛運", 0),
+    (datetime.time(12, 0), "noon_message", "恋愛運", 0),
+    (datetime.time(18, 0), "ranking", "恋愛運", 1),
 ]
 
 
 def next_scheduled(now: datetime.datetime) -> tuple:
-    """次に実行すべき (実行日時, カテゴリ, 日付オフセット) を返す"""
+    """次に実行すべき (実行日時, 投稿タイプ, カテゴリ, 日付オフセット) を返す"""
     today = now.date()
     candidates = []
-    for t, cat, date_offset in SCHEDULE:
+    for t, post_type, cat, date_offset in SCHEDULE:
         dt = datetime.datetime.combine(today, t)
         if dt <= now:
             dt += datetime.timedelta(days=1)
-        candidates.append((dt, cat, date_offset))
+        candidates.append((dt, post_type, cat, date_offset))
     return min(candidates, key=lambda x: x[0])
 
 
-def run_once(user_id: str, token: str, category: str, date_offset: int = 0, dry_run: bool = False) -> None:
-    """星座ランキング生成（1投稿）→ Threads に投稿"""
+def run_once(
+    user_id: str,
+    token: str,
+    category: str,
+    date_offset: int = 0,
+    dry_run: bool = False,
+    post_type: str = "ranking",
+) -> None:
+    """投稿文生成（ランキングまたは短文）→ Threads に投稿"""
     today = datetime.date.today()
     target_date = today + datetime.timedelta(days=date_offset)
-    log.info(f"星座ランキング生成中 [{category}] 日付:{target_date}")
+    log.info(f"投稿文生成中 [{post_type}] [{category}] 日付:{target_date}")
 
     try:
-        posts = generate_horoscope_posts(target_date, category, rank_date=today)
+        if post_type == "ranking":
+            posts = generate_horoscope_posts(target_date, category, rank_date=today)
+        elif post_type in ("morning_message", "noon_message"):
+            posts = [generate_love_message(today, post_type)]
+        else:
+            raise ValueError(f"未対応の投稿タイプ: {post_type}")
     except Exception as e:
         log.error(f"生成エラー: {e}")
         return
@@ -95,27 +109,27 @@ def run_scheduler(dry_run: bool = False) -> None:
         )
         sys.exit(1)
 
-    schedule_str = " / ".join(f"{t.strftime('%H:%M')}[{cat}]" for t, cat, _ in SCHEDULE)
+    schedule_str = " / ".join(f"{t.strftime('%H:%M')}[{post_type}:{cat}]" for t, post_type, cat, _ in SCHEDULE)
     log.info(f"スケジューラー起動 | {schedule_str} | dry_run={dry_run}")
 
     while True:
         now = datetime.datetime.now()
-        target_dt, category, date_offset = next_scheduled(now)
+        target_dt, post_type, category, date_offset = next_scheduled(now)
 
         wait_sec = (target_dt - now).total_seconds()
         log.info(
-            f"次回投稿: {target_dt.strftime('%Y-%m-%d %H:%M')} [{category}] まで "
+            f"次回投稿: {target_dt.strftime('%Y-%m-%d %H:%M')} [{post_type}/{category}] まで "
             f"{int(wait_sec // 3600)}時間{int((wait_sec % 3600) // 60)}分待機"
         )
         time.sleep(wait_sec)
 
-        log.info(f"===== 投稿開始 [{category}] {datetime.datetime.now().strftime('%H:%M')} =====")
-        run_once(user_id, token, category, date_offset, dry_run)
+        log.info(f"===== 投稿開始 [{post_type}/{category}] {datetime.datetime.now().strftime('%H:%M')} =====")
+        run_once(user_id, token, category, date_offset, dry_run, post_type)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="星座ランキング（金運/恋愛運/総合運）を Threads に投稿",
+        description="恋愛系の朝昼メッセージと夕方ランキングを Threads に投稿",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 例:

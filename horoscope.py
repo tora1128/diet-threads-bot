@@ -516,7 +516,7 @@ def generate_horoscope_posts(date: datetime.date, category: str = "総合運", r
     lucky_emoji  = random.Random(seed + 20).choice(_LUCKY_EMOJIS)
 
     # ── 投稿1: 1〜5位 ──
-    day_label = "明日" if category == "総合運" else "今日"
+    day_label = "明日" if date > rank_date else "今日"
     lines = [f"🔮 {date_str} {day_label}の{category}TOP5"]
     hook = random.Random(seed + 30).choice(_HOOKS.get(category, [""]))
     if hook:

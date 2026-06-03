@@ -3,14 +3,28 @@ name: 星座ランキング Auto Post
 on:
   workflow_dispatch:
     inputs:
+      post_type:
+        description: '投稿タイプ'
+        required: true
+        default: 'ranking'
+        type: choice
+        options:
+          - ranking
+          - morning_message
+          - noon_message
       category:
         description: '投稿カテゴリ'
         required: true
-        default: '総合運'
+        default: '恋愛運'
         type: choice
         options:
           - 恋愛運
           - 総合運
+      date_offset:
+        description: '日付オフセット（夕方の明日ランキングは1）'
+        required: false
+        default: ''
+        type: string
 
 jobs:
   post:
@@ -34,9 +48,15 @@ jobs:
       - name: 実行時刻とカテゴリを決定
         run: |
           echo "実行時刻（JST）: $(date '+%Y-%m-%d %H:%M:%S %Z')"
+          POST_TYPE="${{ inputs.post_type }}"
           CAT="${{ inputs.category }}"
+          DATE_OFFSET="${{ inputs.date_offset }}"
+          echo "POST_TYPE=$POST_TYPE" >> $GITHUB_ENV
           echo "CATEGORY=$CAT" >> $GITHUB_ENV
+          echo "DATE_OFFSET=$DATE_OFFSET" >> $GITHUB_ENV
+          echo "投稿タイプ: $POST_TYPE"
           echo "カテゴリ: $CAT"
+          echo "日付オフセット: ${DATE_OFFSET:-auto}"
 
       - name: シークレット確認
         env:
@@ -51,5 +71,12 @@ jobs:
         env:
           THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
           THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          POST_TYPE: ${{ env.POST_TYPE }}
           CATEGORY: ${{ env.CATEGORY }}
-        run: python post_once.py --category "$CATEGORY"
+          DATE_OFFSET: ${{ env.DATE_OFFSET }}
+        run: |
+          if [ -n "$DATE_OFFSET" ]; then
+            python post_once.py --post-type "$POST_TYPE" --category "$CATEGORY" --date-offset "$DATE_OFFSET"
+          else
+            python post_once.py --post-type "$POST_TYPE" --category "$CATEGORY"
+          fi
