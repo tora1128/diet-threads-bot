@@ -497,10 +497,7 @@ def generate_horoscope_posts(date: datetime.date, category: str = "総合運", r
         headline, _body = rank_items[i]
         sign = ranking[i]
         lines.append(f"{medal}：{_SIGN_EMOJI[sign]}{sign}｜{headline}")
-    if category in ("恋愛運", "総合運"):
-        lines += ["", _shorten_body(closing, 48), f"ラッキーな方は「{lucky_emoji}」で教えてね！", "", "無料鑑定書が気になる方はDMで「鑑定」と送ってください🌙"]
-    else:
-        lines += ["", _shorten_body(closing, 48), f"ラッキーな方は「{lucky_emoji}」で教えてね！"]
+    lines += ["", _shorten_body(closing, 48), f"ラッキーな方は「{lucky_emoji}」で教えてね！"]
     post1 = "\n".join(lines)
 
     return [post1]
