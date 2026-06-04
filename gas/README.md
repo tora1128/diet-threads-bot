@@ -25,3 +25,34 @@ GAS上で以下の関数を1つずつ実行します。
 - `postEveningLoveRanking`
 
 GitHub Actionsの実行履歴に起動ログが出れば成功です。
+
+## claspで同期する場合
+
+初回だけGoogleログインとScript IDの設定が必要です。
+
+```bash
+npm install -g @google/clasp
+clasp login
+cp .clasp.json.example .clasp.json
+```
+
+`.clasp.json` の `YOUR_GAS_SCRIPT_ID` をGASのScript IDに置き換えます。
+
+```json
+{
+  "scriptId": "GASのScript ID",
+  "rootDir": "gas"
+}
+```
+
+GASへ反映:
+
+```bash
+clasp push
+```
+
+GASからローカルへ取り込み:
+
+```bash
+clasp pull
+```

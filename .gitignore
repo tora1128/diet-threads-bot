@@ -1,4 +1,6 @@
 .env
+.clasp.json
+.DS_Store
 .note_session.json
 scheduler.log
 weekly_preview.txt
