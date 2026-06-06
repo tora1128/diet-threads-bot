@@ -23,7 +23,6 @@ parser.add_argument(
 )
 parser.add_argument(
     "--date-offset",
-    type=int,
     default=os.environ.get("DATE_OFFSET"),
     help="日付オフセット（省略時: 総合運は1、その他は0）",
 )
