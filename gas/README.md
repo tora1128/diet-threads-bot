@@ -15,6 +15,23 @@ Google Apps ScriptからGitHub Actionsの `post.yml` を起動して、1日3回�
    - `GITHUB_TOKEN`: GitHub fine-grained token
 3. GitHub tokenには対象リポジトリへの `Actions: Read and write` 権限を付ける
 4. GAS上で `setupDailyTriggers` を1回実行する
+5. GAS上で `checkDailyTriggers` を実行し、実行ログに3つのトリガーが出ることを確認する
+
+## 時間実行の確認
+
+`setupDailyTriggers` を1回実行すると、Asia/Tokyo基準で以下の時間トリガーが作成されます。
+
+- 8時台: `postMorningLoveMessage`
+- 12時台: `postNoonLoveMessage`
+- 18時台: `postEveningLoveRanking`
+
+Apps Scriptの時間主導型トリガーは、指定分ちょうどではなく近い時間に実行されます。
+
+GAS上で `checkDailyTriggers` を実行し、実行ログに以下の3つが出れば設定済みです。
+
+- `postMorningLoveMessage`
+- `postNoonLoveMessage`
+- `postEveningLoveRanking`
 
 ## 手動テスト
 

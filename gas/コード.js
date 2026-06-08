@@ -9,6 +9,7 @@ const GITHUB_OWNER = 'tora1128';
 const GITHUB_REPO = 'diet-threads-bot';
 const GITHUB_WORKFLOW = 'post.yml';
 const GITHUB_REF = 'main';
+const TRIGGER_TIMEZONE = 'Asia/Tokyo';
 
 function postMorningLoveMessage() {
   dispatchGitHubAction_({
@@ -42,6 +43,7 @@ function setupDailyTriggers() {
     .everyDays(1)
     .atHour(8)
     .nearMinute(0)
+    .inTimezone(TRIGGER_TIMEZONE)
     .create();
 
   ScriptApp.newTrigger('postNoonLoveMessage')
@@ -49,6 +51,7 @@ function setupDailyTriggers() {
     .everyDays(1)
     .atHour(12)
     .nearMinute(0)
+    .inTimezone(TRIGGER_TIMEZONE)
     .create();
 
   ScriptApp.newTrigger('postEveningLoveRanking')
@@ -56,7 +59,25 @@ function setupDailyTriggers() {
     .everyDays(1)
     .atHour(18)
     .nearMinute(0)
+    .inTimezone(TRIGGER_TIMEZONE)
     .create();
+
+  checkDailyTriggers();
+}
+
+function checkDailyTriggers() {
+  const triggers = ScriptApp.getProjectTriggers();
+  Logger.log(`trigger count: ${triggers.length}`);
+
+  triggers.forEach((trigger) => {
+    Logger.log(
+      [
+        trigger.getHandlerFunction(),
+        trigger.getEventType(),
+        trigger.getTriggerSource(),
+      ].join(' / ')
+    );
+  });
 }
 
 function deleteDietBotTriggers_() {
