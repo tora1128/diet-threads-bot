@@ -52,25 +52,49 @@ _NOON_MESSAGES = [
     "恋が不安な日は、うまく進めることより、乱れた心を戻すことを優先していいよ。\n\n午後から少しでも穏やかに過ごせたら、それだけで十分だよ。",
 ]
 
+_MORNING_FOLLOWUPS = [
+    "朝の気持ちは、その日の恋の流れを作りやすいもの。だからこそ、最初に整えるべきなのは相手との距離より、あなた自身の心の温度だよ。",
+    "不安なまま一日を始めると、相手の小さな反応まで大きく見えてしまうことがある。今日は少しだけ、自分を安心させる言葉を選んでね。",
+    "恋は追いかけるほど苦しくなる時もあるけれど、あなたが自分を大切にしている姿は、ちゃんと魅力として伝わっていくよ。",
+    "今すぐ何かを変えようとしなくても大丈夫。朝はまず、自分の呼吸を戻して、今日できる小さな一歩だけを選べばいいよ。",
+    "相手の気持ちを考えるやさしさがあるなら、その半分でいいから自分にも向けてあげて。恋を続ける力は、そこから戻ってくるよ。",
+    "会えない時間や返事を待つ時間も、あなたの価値を試すものじゃない。今日は自分の生活を少し丁寧に扱うことから始めよう。",
+]
+
+_NOON_FOLLOWUPS = [
+    "午後は、朝より少し現実的に自分の気持ちを見直せる時間。寂しさで動くより、落ち着いた自分が選ぶ言葉を大事にしてね。",
+    "恋に夢中な時ほど、相手中心の一日になりやすいもの。でも、あなたの予定や気分も同じくらい大切にしていいんだよ。",
+    "不安をなくすために連絡したくなる日もあるよね。でも本当に欲しいのは返事だけじゃなく、安心できる関係なのかもしれない。",
+    "午後の少し疲れた心で考えると、恋の悩みは重く見えやすいよ。まずは水を飲んで、肩の力を抜いてから考えてみて。",
+    "相手の反応を待つ間にも、あなたの時間は進んでいるよ。待つだけで終わらせず、自分が少し満たされることを一つ選んでね。",
+    "好きな気持ちがあるからこそ迷うし、慎重になる。それは弱さじゃなくて、ちゃんと大切にしたいと思っている証拠だよ。",
+]
+
 
 def generate_love_message(date: datetime.date, message_type: str) -> str:
     """朝・昼用の恋愛短文投稿を返す"""
+    rng = random.Random(date.toordinal() + len(message_type) * 1000)
     if message_type == "morning_message":
         pool = _MORNING_MESSAGES
+        followups = _MORNING_FOLLOWUPS
         label = "朝の恋愛ひとこと"
     elif message_type == "noon_message":
         pool = _NOON_MESSAGES
+        followups = _NOON_FOLLOWUPS
         label = "昼の恋愛ひとこと"
     else:
         raise ValueError(f"未対応の投稿タイプ: {message_type}")
 
     date_str = f"{date.month}/{date.day}({_WEEKDAYS[date.weekday()]})"
-    message = random.Random(date.toordinal() + len(message_type) * 1000).choice(pool)
+    message = rng.choice(pool)
+    followup = rng.choice(followups)
 
     return "\n".join(
         [
             f"🌙 {date_str} {label}",
             message,
+            "",
+            followup,
             "",
             "今のあなたに届いたら「🌙」で教えてね。",
         ]
