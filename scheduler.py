@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 """毎日の星座ランキングを Threads へ自動投稿するスケジューラー"""
 
@@ -67,13 +68,12 @@ def run_once(
             posts = [generate_love_message(today, post_type)]
         else:
             raise ValueError(f"未対応の投稿タイプ: {post_type}")
-    except Exception as e:
-        log.error(f"生成エラー: {e}")
-        return
+    except Exception:
+        log.exception("生成エラー")
+        raise
 
     if not posts:
-        log.warning("投稿文章を生成できませんでした。スキップします。")
-        return
+        raise RuntimeError("投稿文章を生成できませんでした。")
 
     for i, text in enumerate(posts, 1):
         log.info(f"投稿 {i}/{len(posts)} ({len(text)}文字):\n{text}")
@@ -89,9 +89,9 @@ def run_once(
             log.info(f"投稿完了 {i}/{len(posts)} thread_id={thread_id}")
             if i == 1:
                 parent_id = thread_id
-        except Exception as e:
-            log.error(f"投稿失敗 {i}/{len(posts)}: {e}")
-            continue
+        except Exception:
+            log.exception(f"投稿失敗 {i}/{len(posts)}")
+            raise
 
         if i < len(posts):
             time.sleep(10)
