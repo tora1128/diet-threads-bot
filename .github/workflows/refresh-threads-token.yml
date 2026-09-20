@@ -1,0 +1,65 @@
+name: Refresh Threads Access Token
+
+on:
+  schedule:
+    - cron: '23 1 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TZ: Asia/Tokyo
+
+    steps:
+      - name: Check required secrets
+        env:
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          GH_SECRETS_TOKEN: ${{ secrets.GH_SECRETS_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "$THREADS_ACCESS_TOKEN" ]; then
+            echo "ERROR: THREADS_ACCESS_TOKEN is not set"
+            exit 1
+          fi
+          if [ -z "$GH_SECRETS_TOKEN" ]; then
+            echo "ERROR: GH_SECRETS_TOKEN is not set"
+            exit 1
+          fi
+
+      - name: Refresh long-lived Threads token
+        env:
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_SECRETS_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          response="$(curl --fail-with-body --silent --show-error --get             "https://graph.threads.net/refresh_access_token"             --data-urlencode "grant_type=th_refresh_token"             --data-urlencode "access_token=$THREADS_ACCESS_TOKEN")"
+
+          refreshed_token="$(jq -r '.access_token // empty' <<<"$response")"
+          expires_in="$(jq -r '.expires_in // empty' <<<"$response")"
+
+          if [ -z "$refreshed_token" ] || [ -z "$expires_in" ]; then
+            echo "ERROR: Meta API did not return a refreshed token"
+            exit 1
+          fi
+
+          echo "::add-mask::$refreshed_token"
+
+          profile="$(curl --fail-with-body --silent --show-error --get             "https://graph.threads.net/v1.0/me"             --data-urlencode "fields=id,username"             --data-urlencode "access_token=$refreshed_token")"
+
+          username="$(jq -r '.username // empty' <<<"$profile")"
+          if [ -z "$username" ]; then
+            echo "ERROR: Refreshed token validation failed"
+            exit 1
+          fi
+
+          printf '%s' "$refreshed_token" |
+            gh secret set THREADS_ACCESS_TOKEN --repo "$GITHUB_REPOSITORY"
+
+          expires_days="$((expires_in / 86400))"
+          echo "Threads token refreshed (about ${expires_days} days, account: @${username})"
