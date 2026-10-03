@@ -1,9 +1,6 @@
 name: Threads Auto Reply
 
 on:
-  schedule:
-    # GitHub Actions が混雑しやすい毎時0分・15分刻みを避ける。
-    - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
     inputs:
       dry_run:
