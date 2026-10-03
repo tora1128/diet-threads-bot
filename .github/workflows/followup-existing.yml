@@ -1,0 +1,49 @@
+name: Threads Existing Comment Follow-up
+
+on:
+  workflow_dispatch:
+    inputs:
+      shortcode:
+        description: '対象Threads投稿のショートコード'
+        required: true
+        type: string
+      dry_run:
+        description: '返信せず対象だけ確認する'
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: threads-existing-followups
+  cancel-in-progress: false
+
+jobs:
+  followup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TZ: Asia/Tokyo
+      THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
+      THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+      THREADS_USERNAME: mayonaka_letter
+      THREADS_POST_SHORTCODE: ${{ inputs.shortcode }}
+      MAX_FOLLOWUPS_PER_RUN: '50'
+      DRY_RUN: ${{ inputs.dry_run || 'false' }}
+
+    steps:
+      - name: コードを取得
+        uses: actions/checkout@v5
+
+      - name: Python をセットアップ
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: 依存ライブラリをインストール
+        run: pip install -r requirements.txt
+
+      - name: 既存コメントへ追加案内
+        run: python followup_existing.py
