@@ -21,13 +21,15 @@ class AutoReplyTests(unittest.TestCase):
         second = select_reply_text("reply-123", "ありがとうございます")
         self.assertEqual(first, second)
 
-    def test_free_reading_posts_use_site_and_line_reply(self):
+    def test_free_reading_posts_use_profile_site_reply(self):
         root_text = "【無料鑑定】コメントに『鑑定希望』と書いてください"
         self.assertTrue(is_free_reading_post(root_text))
         selected = select_reply_text("reply-456", "鑑定希望です", root_text)
         self.assertIn(selected, FREE_READING_REPLIES)
-        self.assertIn("LINE", selected)
+        self.assertIn("プロフィール", selected)
         self.assertIn("鑑定書", selected)
+        self.assertNotIn("LINE", selected)
+        self.assertGreater(len(selected), 70)
 
         replies = {
             select_reply_text(f"reply-{index}", "鑑定希望です", root_text)
