@@ -12,6 +12,7 @@ on:
           - ranking
           - morning_message
           - noon_message
+          - free_reading
       category:
         description: '投稿カテゴリ'
         required: true
