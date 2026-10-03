@@ -11,6 +11,7 @@ const GITHUB_POST_WORKFLOW = 'post.yml';
 const GITHUB_REPLY_WORKFLOW = 'reply.yml';
 const GITHUB_REF = 'main';
 const TRIGGER_TIMEZONE = 'Asia/Tokyo';
+const FREE_READING_HOURS = [8, 13, 20];
 
 function postMorningLoveMessage() {
   dispatchGitHubAction_(GITHUB_POST_WORKFLOW, {
@@ -34,6 +35,19 @@ function postEveningLoveRanking() {
     category: '恋愛運',
     date_offset: '1',
   });
+}
+
+/**
+ * 無料鑑定の募集投稿を実行し、次回（3日後）の時刻をランダムに予約する。
+ */
+function postFreeReadingOffer() {
+  dispatchGitHubAction_(GITHUB_POST_WORKFLOW, {
+    post_type: 'free_reading',
+    category: '恋愛運',
+    date_offset: '0',
+  });
+
+  scheduleNextFreeReadingPost_(new Date(), 3);
 }
 
 function runThreadsAutoReply() {
@@ -80,7 +94,52 @@ function setupDailyTriggers() {
     .everyMinutes(15)
     .create();
 
+  // 初回は当日の残りの候補時刻から選び、以後は投稿のたびに3日後を予約する。
+  scheduleFirstFreeReadingPost_();
+
   checkDailyTriggers();
+}
+
+function scheduleFirstFreeReadingPost_() {
+  const now = new Date();
+  const remainingHours = FREE_READING_HOURS.filter((hour) => hour > now.getHours());
+
+  if (remainingHours.length > 0) {
+    createFreeReadingTrigger_(now, randomChoice_(remainingHours));
+    return;
+  }
+
+  const tomorrow = new Date(now);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  createFreeReadingTrigger_(tomorrow, randomChoice_(FREE_READING_HOURS));
+}
+
+function scheduleNextFreeReadingPost_(lastPostedAt, daysLater) {
+  const nextDate = new Date(lastPostedAt);
+  nextDate.setDate(nextDate.getDate() + daysLater);
+  createFreeReadingTrigger_(nextDate, randomChoice_(FREE_READING_HOURS));
+}
+
+function createFreeReadingTrigger_(date, hour) {
+  const scheduledAt = new Date(date);
+  scheduledAt.setHours(hour, 0, 0, 0);
+
+  ScriptApp.newTrigger('postFreeReadingOffer')
+    .timeBased()
+    .at(scheduledAt)
+    .create();
+
+  Logger.log(
+    `次回の無料鑑定募集: ${Utilities.formatDate(
+      scheduledAt,
+      TRIGGER_TIMEZONE,
+      'yyyy-MM-dd HH:mm'
+    )}`
+  );
+}
+
+function randomChoice_(values) {
+  return values[Math.floor(Math.random() * values.length)];
 }
 
 function checkDailyTriggers() {
@@ -103,6 +162,7 @@ function deleteDietBotTriggers_() {
     'postMorningLoveMessage',
     'postNoonLoveMessage',
     'postEveningLoveRanking',
+    'postFreeReadingOffer',
     'runThreadsAutoReply',
   ];
 

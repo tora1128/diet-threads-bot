@@ -1,6 +1,6 @@
 # GAS連携
 
-Google Apps ScriptからGitHub Actionsを起動し、1日3回の投稿と15分ごとのコメント返信を実行します。
+Google Apps ScriptからGitHub Actionsを起動し、1日3回の通常投稿、3日ごとの無料鑑定募集、15分ごとのコメント返信を実行します。
 
 コメントへの自動返信は、GASの `runThreadsAutoReply` が15分ごとにGitHub Actionsの `.github/workflows/reply.yml` を起動します。返信対象は直近48時間の短い通常コメントのみです。無料鑑定の募集投稿には、アカウントのフォローとプロフィールサイトからの追加をお願いし、数回やり取りした後に鑑定書を送る流れを丁寧に伝える複数の定型文を使い分けます。質問、URL、個人情報、医療・法律・金銭・深刻な相談、攻撃的な内容は自動返信せず、人による確認対象としてログに残します。同じコメントに自分の返信がある場合は再返信しません。
 
@@ -16,6 +16,9 @@ Google Apps ScriptからGitHub Actionsを起動し、1日3回の投稿と15分�
 - 朝: `postMorningLoveMessage` -> 恋愛お姉さんの朝ひとこと
 - 昼: `postNoonLoveMessage` -> 恋愛お姉さんの昼ひとこと
 - 夕方: `postEveningLoveRanking` -> 明日の恋愛運TOP5ランキング
+- 3日ごと: `postFreeReadingOffer` -> 当日の日付入り無料タロット鑑定募集
+  - 投稿時刻は朝8時・昼13時・夜20時から毎回ランダムに選択
+  - 応募方法はコメント欄の「鑑定希望」
 
 ## 初期設定
 
@@ -24,7 +27,7 @@ Google Apps ScriptからGitHub Actionsを起動し、1日3回の投稿と15分�
    - `GITHUB_TOKEN`: GitHub fine-grained token
 3. GitHub tokenには対象リポジトリへの `Actions: Read and write` 権限を付ける
 4. GAS上で `setupDailyTriggers` を1回実行する
-5. GAS上で `checkDailyTriggers` を実行し、実行ログに4つのトリガーが出ることを確認する
+5. GAS上で `checkDailyTriggers` を実行し、実行ログに5つのトリガーが出ることを確認する
 
 ## 時間実行の確認
 
@@ -34,14 +37,16 @@ Google Apps ScriptからGitHub Actionsを起動し、1日3回の投稿と15分�
 - 12時台: `postNoonLoveMessage`
 - 18時台: `postEveningLoveRanking`
 - 15分ごと: `runThreadsAutoReply`
+- 3日ごと: `postFreeReadingOffer`（朝8時・昼13時・夜20時からランダム）
 
 Apps Scriptの時間主導型トリガーは、指定分ちょうどではなく近い時間に実行されます。
 
-GAS上で `checkDailyTriggers` を実行し、実行ログに以下の4つが出れば設定済みです。
+GAS上で `checkDailyTriggers` を実行し、実行ログに以下の5つが出れば設定済みです。
 
 - `postMorningLoveMessage`
 - `postNoonLoveMessage`
 - `postEveningLoveRanking`
+- `postFreeReadingOffer`
 - `runThreadsAutoReply`
 
 ## 手動テスト
@@ -51,6 +56,7 @@ GAS上で以下の関数を1つずつ実行します。
 - `postMorningLoveMessage`
 - `postNoonLoveMessage`
 - `postEveningLoveRanking`
+- `postFreeReadingOffer`
 - `testThreadsAutoReplyDryRun`（返信せず、対象確認だけを行う接続テスト）
 
 実返信の手動確認が必要な場合のみ `runThreadsAutoReply` を実行します。
