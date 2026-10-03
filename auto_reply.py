@@ -51,6 +51,8 @@ THANKS_REPLIES = (
     "コメントありがとうございます。少しでもお役に立てたなら嬉しいです🌿",
 )
 
+FREE_READING_REPLY = "詳しくはDMにてお送りしてますのでフォローしてお待ちください"
+
 # 自動応答で扱うべきではない内容。人が確認できるよう、返信せずログだけ残す。
 SENSITIVE_PATTERN = re.compile(
     r"(死にたい|消えたい|自殺|殺す|殺され|暴力|DV|ストーカー|虐待|"
@@ -63,6 +65,10 @@ HOSTILE_PATTERN = re.compile(
     re.IGNORECASE,
 )
 THANKS_PATTERN = re.compile(r"(ありがとう|感謝|参考にな|助かり|嬉しい|うれしい)")
+FREE_READING_POST_PATTERN = re.compile(
+    r"(無料\s*(鑑定|占い)|鑑定\s*(募集|希望)|無料で.{0,8}(鑑定|占))",
+    re.IGNORECASE,
+)
 URL_PATTERN = re.compile(r"https?://|www\.", re.IGNORECASE)
 LETTER_OR_NUMBER_PATTERN = re.compile(r"[A-Za-z0-9ぁ-んァ-ヶ一-龠]")
 
@@ -150,7 +156,15 @@ def should_skip_reply(text: str) -> str | None:
     return None
 
 
-def select_reply_text(reply_id: str, text: str) -> str:
+def is_free_reading_post(text: str) -> bool:
+    compact = re.sub(r"\s+", " ", (text or "").strip())
+    return bool(FREE_READING_POST_PATTERN.search(compact))
+
+
+def select_reply_text(reply_id: str, text: str, root_text: str = "") -> str:
+    if is_free_reading_post(root_text):
+        return FREE_READING_REPLY
+
     compact = re.sub(r"\s+", " ", text.strip())
     if THANKS_PATTERN.search(compact):
         choices = THANKS_REPLIES
@@ -237,7 +251,11 @@ def run_auto_reply(
                 )
                 continue
 
-            response_text = select_reply_text(reply_id, text)
+            response_text = select_reply_text(
+                reply_id,
+                text,
+                str(root.get("text") or ""),
+            )
             log.info(
                 "返信対象: id=%s user=@%s text=%r response=%r",
                 reply_id,
