@@ -1,9 +1,11 @@
 import datetime as dt
 import unittest
+from unittest.mock import patch
 
 from auto_reply import (
     FREE_READING_REPLIES,
     is_free_reading_post,
+    run_auto_reply,
     select_reply_text,
     should_skip_reply,
     unanswered_direct_replies,
@@ -27,10 +29,11 @@ class AutoReplyTests(unittest.TestCase):
         selected = select_reply_text("reply-456", "鑑定希望です", root_text)
         self.assertIn(selected, FREE_READING_REPLIES)
         self.assertIn("プロフィール", selected)
-        self.assertIn("フォロー", selected)
-        self.assertIn("鑑定書", selected)
-        self.assertNotIn("LINE", selected)
-        self.assertGreater(len(selected), 70)
+        self.assertTrue("申し込み" in selected or "受付" in selected)
+
+        for reply in FREE_READING_REPLIES:
+            self.assertIn("プロフィール", reply)
+            self.assertNotIn("追加", reply)
 
         replies = {
             select_reply_text(f"reply-{index}", "鑑定希望です", root_text)
@@ -45,6 +48,43 @@ class AutoReplyTests(unittest.TestCase):
             select_reply_text("reply-789", "読みました", root_text),
             select_reply_text("reply-789", "読みました", "無料鑑定を受付中"),
         )
+
+    @patch("auto_reply.list_conversation")
+    @patch("auto_reply.list_recent_root_posts")
+    def test_only_free_reading_posts_are_processed(
+        self, list_recent_root_posts_mock, list_conversation_mock
+    ):
+        now = dt.datetime.now(dt.timezone.utc).isoformat()
+        list_recent_root_posts_mock.return_value = [
+            {
+                "id": "regular-root",
+                "text": "今日の恋愛運をお届けします",
+            },
+            {
+                "id": "free-root",
+                "text": "本日限定｜無料タロット鑑定。鑑定希望とコメントしてください",
+            },
+        ]
+        list_conversation_mock.return_value = [
+            {
+                "id": "reply-1",
+                "text": "鑑定希望です",
+                "timestamp": now,
+                "username": "reader1",
+                "is_reply_owned_by_me": False,
+                "replied_to": {"id": "free-root"},
+            }
+        ]
+
+        posted = run_auto_reply(
+            "user-id",
+            "token",
+            "mayonaka_letter",
+            dry_run=True,
+        )
+
+        self.assertEqual(posted, 1)
+        list_conversation_mock.assert_called_once_with("free-root", "token")
 
     def test_excludes_owned_answered_and_nested_replies(self):
         now = dt.datetime.now(dt.timezone.utc).isoformat()

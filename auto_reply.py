@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Threads の自分の投稿についた新着コメントへ安全な定型返信を行う。"""
+"""Threadsの無料鑑定募集についた新着コメントへ安全な定型返信を行う。"""
 
 from __future__ import annotations
 
@@ -52,12 +52,12 @@ THANKS_REPLIES = (
 )
 
 FREE_READING_REPLIES = (
-    "無料鑑定をご希望いただきありがとうございます。こちらのアカウントをフォローのうえ、詳しいご案内はプロフィールのサイトより追加をお願いします。現在のお悩みや状況を何度かお伺いしたあと、あなただけの鑑定書を順番にお送りします🌙",
-    "鑑定希望のコメントありがとうございます。まずはこのアカウントをフォローして、プロフィールにあるサイトより追加をお願いいたします。そちらでいくつかお話を伺いながら内容を整理し、後ほど鑑定書として丁寧にお届けします✨",
-    "ご縁をいただきありがとうございます。フォローしていただいたあと、無料鑑定の続きはプロフィールのサイトより追加をお願いします。お悩みについて数回やり取りをしたうえで、あなたに合わせた鑑定書をお送りします🌿",
-    "無料鑑定へお申し込みいただきありがとうございます。こちらをフォローのうえ、プロフィールのサイトより追加をお願いします。現在の状況やお気持ちを少しずつ伺ったあと、内容をまとめた鑑定書を順番にお届けします🌙",
-    "鑑定をご希望いただきありがとうございます。今後のご案内を受け取れるようフォローしてから、プロフィールのサイトより追加をお願いいたします。何度かお話を伺い、今のあなたに必要な内容をまとめて鑑定書としてお送りします✨",
-    "コメントありがとうございます。無料鑑定をご希望の方は、このアカウントをフォローしてプロフィールのサイトより追加をお願いします。そちらでお悩みや状況を数回お聞きしたあと、心を込めて作成した鑑定書をお届けします🌙",
+    "コメントありがとうございます。無料鑑定をご希望の方は、プロフィールのサイトからお申し込みをお願いします🌙",
+    "鑑定希望ありがとうございます。プロフィールにある無料鑑定サイトからお申し込みください。確認後、順番にメールでお届けします✨",
+    "ご参加ありがとうございます。無料鑑定のお申し込みは、プロフィールのサイトからお願いいたします🌿",
+    "コメントありがとうございます。受付はプロフィールのサイトで行っています。そちらから必要事項をご入力ください🌙",
+    "数字で教えてくださりありがとうございます。鑑定をご希望の場合は、プロフィールのサイトからお申し込みをお願いします✨",
+    "ご縁をありがとうございます。無料鑑定はプロフィールのリンク先から受け付けています。LINEでは受付していません🌙",
 )
 
 # 自動応答で扱うべきではない内容。人が確認できるよう、返信せずログだけ残す。
@@ -240,6 +240,14 @@ def run_auto_reply(
     log.info("返信のある最近の親投稿: %s件", len(roots))
 
     for root in roots:
+        root_text = str(root.get("text") or "")
+        if not is_free_reading_post(root_text):
+            log.info(
+                "無料鑑定募集以外の投稿を見送り: id=%s",
+                root.get("id") or "unknown",
+            )
+            continue
+
         root_id = str(root.get("id") or "")
         if not root_id:
             continue
@@ -264,7 +272,7 @@ def run_auto_reply(
             response_text = select_reply_text(
                 reply_id,
                 text,
-                str(root.get("text") or ""),
+                root_text,
             )
             log.info(
                 "返信対象: id=%s user=@%s text=%r response=%r",
@@ -287,7 +295,7 @@ def run_auto_reply(
 def main() -> None:
     user_id = os.environ.get("THREADS_USER_ID", "")
     token = os.environ.get("THREADS_ACCESS_TOKEN", "")
-    username = os.environ.get("THREADS_USERNAME", "mayonaka_letter")
+    username = os.environ.get("THREADS_USERNAME", "beau.tyclip")
     if not user_id or not token:
         raise SystemExit("THREADS_USER_ID / THREADS_ACCESS_TOKEN が未設定です")
 
