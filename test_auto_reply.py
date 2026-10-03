@@ -2,7 +2,7 @@ import datetime as dt
 import unittest
 
 from auto_reply import (
-    FREE_READING_REPLY,
+    FREE_READING_REPLIES,
     is_free_reading_post,
     select_reply_text,
     should_skip_reply,
@@ -24,17 +24,23 @@ class AutoReplyTests(unittest.TestCase):
     def test_free_reading_posts_use_follow_and_dm_reply(self):
         root_text = "【無料鑑定】コメントに『鑑定希望』と書いてください"
         self.assertTrue(is_free_reading_post(root_text))
-        self.assertEqual(
+        self.assertIn(
             select_reply_text("reply-456", "鑑定希望です", root_text),
-            FREE_READING_REPLY,
+            FREE_READING_REPLIES,
         )
+
+        replies = {
+            select_reply_text(f"reply-{index}", "鑑定希望です", root_text)
+            for index in range(20)
+        }
+        self.assertGreater(len(replies), 1)
 
     def test_regular_posts_keep_general_replies(self):
         root_text = "今日の恋愛運をお届けします"
         self.assertFalse(is_free_reading_post(root_text))
         self.assertNotEqual(
             select_reply_text("reply-789", "読みました", root_text),
-            FREE_READING_REPLY,
+            select_reply_text("reply-789", "読みました", "無料鑑定を受付中"),
         )
 
     def test_excludes_owned_answered_and_nested_replies(self):

@@ -51,7 +51,14 @@ THANKS_REPLIES = (
     "コメントありがとうございます。少しでもお役に立てたなら嬉しいです🌿",
 )
 
-FREE_READING_REPLY = "詳しくはDMにてお送りしてますのでフォローしてお待ちください"
+FREE_READING_REPLIES = (
+    "詳しくはDMにてお送りしますので、フォローしてお待ちください。",
+    "鑑定結果はDMへ順番にお届けします。フォローしてお待ちくださいね🌙",
+    "詳しい内容はDMでお送りします。フォローのうえ、少しお待ちください✨",
+    "鑑定内容はDMにてご案内しますので、フォローしてお待ちください。",
+    "順番にDMで詳しくお伝えします。フォローしてお待ちくださいね🌿",
+    "詳しい結果はDMへお送りします。フォロー後、そのままお待ちください🌙",
+)
 
 # 自動応答で扱うべきではない内容。人が確認できるよう、返信せずログだけ残す。
 SENSITIVE_PATTERN = re.compile(
@@ -163,7 +170,10 @@ def is_free_reading_post(text: str) -> bool:
 
 def select_reply_text(reply_id: str, text: str, root_text: str = "") -> str:
     if is_free_reading_post(root_text):
-        return FREE_READING_REPLY
+        digest = hashlib.sha256(reply_id.encode("utf-8")).digest()
+        return FREE_READING_REPLIES[
+            int.from_bytes(digest[:2], "big") % len(FREE_READING_REPLIES)
+        ]
 
     compact = re.sub(r"\s+", " ", text.strip())
     if THANKS_PATTERN.search(compact):
