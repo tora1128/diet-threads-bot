@@ -27,6 +27,7 @@ class AutoReplyTests(unittest.TestCase):
         selected = select_reply_text("reply-456", "鑑定希望です", root_text)
         self.assertIn(selected, FREE_READING_REPLIES)
         self.assertIn("プロフィール", selected)
+        self.assertIn("フォロー", selected)
         self.assertIn("鑑定書", selected)
         self.assertNotIn("LINE", selected)
         self.assertGreater(len(selected), 70)
