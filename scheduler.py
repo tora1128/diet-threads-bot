@@ -1,6 +1,6 @@
 
 #!/usr/bin/env python3
-"""毎日の星座ランキングを Threads へ自動投稿するスケジューラー"""
+"""恋愛メッセージ、星座ランキング、無料鑑定募集をThreadsへ投稿する。"""
 
 import argparse
 import datetime
@@ -11,6 +11,7 @@ import time
 
 sys.path.insert(0, os.path.dirname(__file__))
 from generate_sentences import threads_post
+from free_reading import generate_free_reading_post
 from horoscope import generate_horoscope_posts
 from love_messages import generate_love_message
 
@@ -56,7 +57,7 @@ def run_once(
     dry_run: bool = False,
     post_type: str = "ranking",
 ) -> None:
-    """投稿文生成（ランキングまたは短文）→ Threads に投稿"""
+    """投稿文を生成してThreadsへ投稿する。"""
     today = datetime.date.today()
     target_date = today + datetime.timedelta(days=date_offset)
     log.info(f"投稿文生成中 [{post_type}] [{category}] 日付:{target_date}")
@@ -66,6 +67,8 @@ def run_once(
             posts = generate_horoscope_posts(target_date, category, rank_date=today)
         elif post_type in ("morning_message", "noon_message"):
             posts = [generate_love_message(today, post_type)]
+        elif post_type == "free_reading":
+            posts = [generate_free_reading_post(today)]
         else:
             raise ValueError(f"未対応の投稿タイプ: {post_type}")
     except Exception:

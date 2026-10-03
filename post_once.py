@@ -11,7 +11,7 @@ from scheduler import run_once
 parser = argparse.ArgumentParser(description="指定タイプの投稿を1回実行する")
 parser.add_argument(
     "--post-type",
-    choices=["ranking", "morning_message", "noon_message"],
+    choices=["ranking", "morning_message", "noon_message", "free_reading"],
     default=os.environ.get("POST_TYPE", "ranking"),
     help="投稿タイプ（環境変数 POST_TYPE でも指定可）",
 )
