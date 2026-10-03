@@ -2,6 +2,15 @@
 
 Google Apps ScriptからGitHub Actionsの `post.yml` を起動して、1日3回投稿します。
 
+コメントへの自動返信は `.github/workflows/reply.yml` が15分ごとに実行します。返信対象は直近48時間の短い通常コメントのみです。質問、URL、個人情報、医療・法律・金銭・深刻な相談、攻撃的な内容は自動返信せず、人による確認対象としてログに残します。同じコメントに自分の返信がある場合は再返信しません。
+
+自動返信には、Threadsアクセストークンへ次の権限が必要です。
+
+- `threads_read_replies`
+- `threads_manage_replies`
+- `threads_basic`
+- `threads_content_publish`
+
 ## 投稿構成
 
 - 朝: `postMorningLoveMessage` -> 恋愛お姉さんの朝ひとこと
