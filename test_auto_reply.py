@@ -27,19 +27,12 @@ class AutoReplyTests(unittest.TestCase):
         root_text = "【無料鑑定】コメントに『鑑定希望』と書いてください"
         self.assertTrue(is_free_reading_post(root_text))
         selected = select_reply_text("reply-456", "鑑定希望です", root_text)
-        self.assertIn(selected, FREE_READING_REPLIES)
-        self.assertIn("プロフィール", selected)
-        self.assertTrue("申し込み" in selected or "受付" in selected)
-
-        for reply in FREE_READING_REPLIES:
-            self.assertIn("プロフィール", reply)
-            self.assertNotIn("追加", reply)
-
-        replies = {
-            select_reply_text(f"reply-{index}", "鑑定希望です", root_text)
-            for index in range(20)
-        }
-        self.assertGreater(len(replies), 1)
+        self.assertEqual(
+            selected,
+            "コメントありがとうございます。無料鑑定ご希望の方は、"
+            "フォロー後プロフィールサイトより申し込みをお願いします。",
+        )
+        self.assertEqual(len(FREE_READING_REPLIES), 1)
 
     def test_regular_posts_keep_general_replies(self):
         root_text = "今日の恋愛運をお届けします"
